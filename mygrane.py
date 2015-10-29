@@ -36,8 +36,8 @@ class comic():
 		#print("Extracting info from " +self.filepath)
 		# get the publication date name from the filename
 		yearregex = re.compile("[1-2][90]\d\d")
-		monthregex2 = re.compile("[1-2][90]\d\d([01][0-9])")
-		monthregex = re.compile("([01][1-9])-[0-3][0-9]-[1-2][90]\d\d")
+		monthregexcmc = re.compile("[1-2][90]\d\d([01][0-9])")
+		monthregexnem = re.compile("([01][1-9])-[0-3][0-9]-[1-2][90]\d\d")
 		dayregex = re.compile("[01][1-9]-([0-3][0-9])-[1-2][90]\d\d")
 		try:	
 			year = int(yearregex.findall(self.filepath)[-1]) # returns the last date found in the filepath
@@ -47,13 +47,13 @@ class comic():
 			year = 1
 			self.date_accuracy = "null"
 		try:
-			month = int(monthregex.search(self.filepath).group(1))
-			infoformat = "nem"
+			month = int(monthregexcmc.search(self.filepath).group(1))
+			infoformat = "cmc"
 			self.date_accuracy = "month"
 		except Exception as e:
 			#print(e)
 			try:
-				month = int(monthregex2.search(self.filepath).group(1))
+				month = int(monthregexnem.search(self.filepath).group(1))
 				infoformat = "nem"
 				self.date_accuracy = "month"
 			except Exception:
@@ -69,16 +69,17 @@ class comic():
 		
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\d{1,3})[\.| |\(]")
-			self.issue = int(issueregex.search(filename).group(1))
+			self.issue = int(issueregex.findall(filename)[-1])
 		except Exception as e:
 			print("No issue number found due to: " + str(e))
 
 		try: #Get the series name from the filename
-			nonumber =  filename.split(str(self.issue))[0].strip().strip().rstrip('0').strip()
-			if format != "cmc":
+			nonumber =filename[:filename.rfind(str(self.issue))].strip('0').strip()
+			print(infoformat)
+			if infoformat != "cmc":
 				self.series = nonumber
 			else:
-				self.series = nonumber.split(monthregex2.search(nonumber).group(0)).strip()
+				self.series = nonumber[7:]
 		except Exception as e:
 			print("Series Name not found due to: " + str(e))
 			pass
