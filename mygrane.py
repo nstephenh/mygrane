@@ -74,8 +74,9 @@ class comic():
 			print("No issue number found due to: " + str(e))
 
 		try: #Get the series name from the filename
-			nonumber =filename[:filename.rfind(str(self.issue))].strip('0').strip()
-			print(infoformat)
+			beforeparen = filename.split("(")[0].strip()
+			nonumber = beforeparen.split(str(self.issue))[0].strip('0').strip()
+			#print(infoformat)
 			if infoformat != "cmc":
 				self.series = nonumber
 			else:
