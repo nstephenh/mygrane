@@ -37,8 +37,8 @@ class comic():
 		# get the publication date name from the filename
 		yearregex = re.compile("[1-2][90]\d\d")
 		monthregexcmc = re.compile("[1-2][90]\d\d([01][0-9])")
-		monthregexnem = re.compile("([01][1-9])-[0-3][0-9]-[1-2][90]\d\d")
-		dayregex = re.compile("[01][1-9]-([0-3][0-9])-[1-2][90]\d\d")
+		monthregexnem = re.compile("([01][0-9])-[0-3][0-9]-[1-2][90]\d\d")
+		dayregex = re.compile("[01][0-9]-([0-3][0-9])-[1-2][90]\d\d")
 		try:	
 			year = int(yearregex.findall(self.filepath)[-1]) # returns the last date found in the filepath
 			self.date_accuracy = "year"
