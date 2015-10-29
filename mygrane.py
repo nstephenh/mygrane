@@ -18,6 +18,15 @@ class comic():
 		return self.franchise
 	def addcharacter(self, character):
 		self.characters.append(character)
+	def get_info_from_filepath(self):
+		noextension = self.filepath.split(".")[-2] # Remove the extension from the filepath, as we know 
+		filename = noextension.split("/")[-1] # Gives us the raw filename
+		print(filename)
+		issueregex = re.compile("(\d{1,3})")
+		try:
+			self.issue =  issueregex.search(filename).group(0)
+		except Exception as e:
+			print(e)
 
 def comicswithchar(character, sortkey = "publication_date"):
 	pass
@@ -30,17 +39,14 @@ def find_comic_files(directory):
 			if filename.split(".")[-1] in allowed_extensions:
 				comics.append(comic(filepath = directory[0] +"/" + filename))
 	return comics
-def get_info_from_filepath(filepath):
-	noextension = filepath.split(".")[-2] # Remove the extension from the filepath, as we know 
-	filename = noextension.split("/")[-1] # Gives us the raw filename
-	return str(re.match("", filename).group(0)) # Find the issue number
 
+	
 	
 	
 
 def init_comics(comics):
 	for issue in comics:
-		print(get_info_from_filepath(issue.filepath))	
+		issue.get_info_from_filepath()	
 	return comics
 
 init_comics(find_comic_files('/home/nsh/Documents/Comics'))
