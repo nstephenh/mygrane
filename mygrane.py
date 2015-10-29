@@ -88,27 +88,48 @@ class comic():
 		
 	def printinfo(self):
 		print(self.series +" "+ str(self.issue)+ " (" + str(self.publication_date)+") accurate to the " + self.date_accuracy)
-	
-def comicswithchar(character, sortkey = "publication_date"):
-	pass
 
-def find_comic_files(directory):
-	comics = []
-	walk = os.walk(directory)
-	for directory in walk:
-		for filename in directory[2]:
-			if filename.split(".")[-1] in allowed_extensions:
-				comics.append(comic(filepath = directory[0] +"/" + filename))
-	return comics
+class comiclist():
+	def __init__(self, comicsin):
+		self.contained_comics = comicsin
+	def comicswithchar(character, sortkey = "publication_date"):
+		pass
 
-	
-	
-	
+	def find_comic_files(directory):
+		try:
+			directory = directory.strip("'")
+		except:
+			pass
+		comics = []
+		walk = os.walk(directory)
+		for directory in walk:
+			for filename in directory[2]:
+				if filename.split(".")[-1] in allowed_extensions:
+					comics.append(comic(filepath = directory[0] +"/" + filename))
+		return comics
 
-def init_comics(comics):
-	for issue in comics:
-		issue.get_info_from_filepath()
-		issue.printinfo()
-	return comics
+	def init_comics(self):
+		for issue in self.contained_comics:
+			issue.get_info_from_filepath()
 
-init_comics(find_comic_files('/home/nsh/Documents/Comics'))
+
+def command_interpreter(input1, input2):
+	global comic_list
+	if input1 == "initdir": 
+		comic_list = comiclist(comiclist.find_comic_files(input2))
+		comic_list.init_comics()
+	elif input1 == "listcomics":
+		for issue in comic_list.contained_comics:
+			issue.printinfo()
+	elif input1 == "exit" or input1 == 'q':
+		exit()
+	
+while True:
+	textin = input("Enter Command:")
+	input1 = textin.split()[0]
+	try:
+		input2 = textin.split()[1]
+	except:
+		input2 = ""
+	command_interpreter(input1, input2)
+	
