@@ -24,9 +24,10 @@ class comic():
 
 	def get_info_from_filepath(self):
 		"""
-		Returns the following information from the filename in the following formats
+		Sets the following information from the filename in the following formats
 		issue - 1-3 digits followed by a space or .
 		series - the string in the filename before the number
+		publciation_date - The pulbication date of the comic, as auccraratly as it can from the given information
 		formats:
 			nem
 			cmc
@@ -92,9 +93,12 @@ class comic():
 class comiclist():
 	def __init__(self, comicsin):
 		self.contained_comics = comicsin
-	def comicswithchar(character, sortkey = "publication_date"):
+	def comicswithchar(self, character):
 		pass
-
+	def sortcomics(self): #sorts comics by series and publication date
+		self.contained_comics.sort(key =lambda comic: comic.publication_date)
+		self.contained_comics.sort(key =lambda comic: comic.series)
+			
 	def find_comic_files(directory):
 		try:
 			directory = directory.strip("'")
@@ -113,14 +117,18 @@ class comiclist():
 			issue.get_info_from_filepath()
 
 
+comic_list = comiclist(comiclist.find_comic_files("/home/nsh/Documents/Comics"))
+comic_list.init_comics()	
 def command_interpreter(input1, input2):
 	global comic_list
 	if input1 == "initdir": 
 		comic_list = comiclist(comiclist.find_comic_files(input2))
 		comic_list.init_comics()
-	elif input1 == "listcomics":
+	elif input1 in ["listcomics", "ls", "lc", "list"]:
 		for issue in comic_list.contained_comics:
 			issue.printinfo()
+	elif input1 == "sort":
+		comic_list.sortcomics()
 	elif input1 == "exit" or input1 == 'q':
 		exit()
 	
