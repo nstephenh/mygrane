@@ -2,6 +2,7 @@
 import os
 import re
 from datetime import date
+import sqlite3
 
 allowed_extensions = ['cbz', 'cbr', 'pdf']
 
@@ -91,8 +92,12 @@ class comic():
 		print(self.series +" "+ str(self.issue)+ " (" + str(self.publication_date)+") accurate to the " + self.date_accuracy)
 
 class comiclist():
-	def __init__(self, comicsin):
+	def __init__(self, name,  comicsin = []):
+		for item in comicsin:
+			if type(item) != type(comic()):
+				raise Exception("Comiclist object must cointain only comics")
 		self.contained_comics = comicsin
+		
 	def comicswithchar(self, character):
 		pass
 	def sortcomics(self): #sorts comics by series and publication date
@@ -115,6 +120,10 @@ class comiclist():
 	def init_comics(self):
 		for issue in self.contained_comics:
 			issue.get_info_from_filepath()
+	def write_db(self):
+		"""Writes all of info in the comic objects to sqlite database"""
+		pass
+		
 
 
 comic_list = comiclist(comiclist.find_comic_files("/home/nsh/Documents/Comics"))
