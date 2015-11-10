@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import os
 import re
@@ -5,6 +6,7 @@ from datetime import date
 import sqlite3
 
 allowed_extensions = ['cbz', 'cbr', 'pdf']
+database_dir = "../comics"
 
 class comic():
 	def __init__(self, issue= -1, authors = [], franchise="", series="", publication_date=date.min, date_accuracy = "null", publisher="", filepath = ""):
@@ -19,7 +21,7 @@ class comic():
 		self.characters = []
 	def getfranchise(self):
 		return self.franchise
-	
+
 	def addcharacter(self, character):
 		self.characters.append(character)
 
@@ -41,7 +43,7 @@ class comic():
 		monthregexcmc = re.compile("[1-2][90]\d\d([01][0-9])")
 		monthregexnem = re.compile("([01][0-9])-[0-3][0-9]-[1-2][90]\d\d")
 		dayregex = re.compile("[01][0-9]-([0-3][0-9])-[1-2][90]\d\d")
-		try:	
+		try:
 			year = int(yearregex.findall(self.filepath)[-1]) # returns the last date found in the filepath
 			self.date_accuracy = "year"
 		except Exception as e:
@@ -68,7 +70,7 @@ class comic():
 			day = 1
 		#print(str(year) + str(month) + str(day))
 		self.publication_date = date(year, month, day) # Set the publication date to the found date
-		
+
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\d{1,3})[\.| |\(]")
 			self.issue = int(issueregex.findall(filename)[-1])
@@ -86,24 +88,25 @@ class comic():
 		except Exception as e:
 			print("Series Name not found due to: " + str(e))
 			pass
-		
-		
+
+
 	def printinfo(self):
 		print(self.series +" "+ str(self.issue)+ " (" + str(self.publication_date)+") accurate to the " + self.date_accuracy)
 
 class comiclist():
 	def __init__(self, name,  comicsin = []):
+		self.name = name
 		for item in comicsin:
 			if type(item) != type(comic()):
 				raise Exception("Comiclist object must cointain only comics")
 		self.contained_comics = comicsin
-		
+
 	def comicswithchar(self, character):
 		pass
 	def sortcomics(self): #sorts comics by series and publication date
 		self.contained_comics.sort(key =lambda comic: comic.publication_date)
 		self.contained_comics.sort(key =lambda comic: comic.series)
-			
+
 	def find_comic_files(directory):
 		try:
 			directory = directory.strip("'")
@@ -122,15 +125,17 @@ class comiclist():
 			issue.get_info_from_filepath()
 	def write_db(self):
 		"""Writes all of info in the comic objects to sqlite database"""
-		pass
-		
+		#create a new database file for this list
+		for item in self: #for each comic that exists, write that to the mysql database
+			pass
+
 
 
 comic_list = comiclist(comiclist.find_comic_files("/home/nsh/Documents/Comics"))
-comic_list.init_comics()	
+comic_list.init_comics()
 def command_interpreter(input1, input2):
 	global comic_list
-	if input1 == "initdir": 
+	if input1 == "initdir":
 		comic_list = comiclist(comiclist.find_comic_files(input2))
 		comic_list.init_comics()
 	elif input1 in ["listcomics", "ls", "lc", "list"]:
@@ -140,7 +145,7 @@ def command_interpreter(input1, input2):
 		comic_list.sortcomics()
 	elif input1 == "exit" or input1 == 'q':
 		exit()
-	
+
 while True:
 	textin = input("Enter Command:")
 	input1 = textin.split()[0]
@@ -149,4 +154,3 @@ while True:
 	except:
 		input2 = ""
 	command_interpreter(input1, input2)
-	
