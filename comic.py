@@ -1,8 +1,6 @@
 import re
 from datetime import date
 
-
-
 class comic():
 	def __init__(self, issue= -1, authors = [], franchise="", series="", publication_date=date.min, date_accuracy = "null", publisher="", filepath = ""):
 		self.issue = issue
