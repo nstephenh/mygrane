@@ -10,6 +10,12 @@ class cli():
 				comic_list.init_comics()
 			else:
 				print("initdir requires dir to init")
+		elif input1 == "initdirv":
+			if input2 != "":
+				comic_list = comiclist("testing", comiclist.find_comic_files(input2, True))
+				comic_list.init_comics()
+			else:
+				print("initdir requires dir to init")
 		elif input1 in ["listcomics", "ls", "lc", "list"]:
 			try:
 				for issue in comic_list.contained_comics:

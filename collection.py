@@ -18,7 +18,7 @@ class comiclist():
 		self.contained_comics.sort(key =lambda comic: comic.publication_date)
 		self.contained_comics.sort(key =lambda comic: comic.series)
 
-	def find_comic_files(directory):
+	def find_comic_files(directory, verbose=False):
 		try:
 			directory = directory.strip("'")
 		except:
@@ -27,10 +27,12 @@ class comiclist():
 		comics = []
 		walk = os.walk(directory)
 		for directory in walk:
+			if verbose == True:
+				print("exploring directory" + directory[0])
 			for filename in directory[2]:
 				if filename.split(".")[-1] in preferences.allowed_extensions:
 					comics.append(comic(filepath = directory[0] +"/" + filename))
-		print(comics)
+		#print(comics)
 		return comics
 
 
