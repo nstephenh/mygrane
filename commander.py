@@ -11,10 +11,16 @@ class cli():
 			else:
 				print("initdir requires dir to init")
 		elif input1 in ["listcomics", "ls", "lc", "list"]:
-			for issue in comic_list.contained_comics:
-				issue.printinfo()
+			try:
+				for issue in comic_list.contained_comics:
+					issue.printinfo()
+			except NameError:
+				print("cannot list with no imported comics")
 		elif input1 == "sort":
-			comic_list.sortcomics()
+			try:
+				comic_list.sortcomics()
+			except NameError:
+				print("Cannot sort when there are no comics to sort")
 		elif input1 == "exit" or input1 == 'q':
 			exit()
 
@@ -23,7 +29,7 @@ class cli():
 			textin = input("Enter Command:")
 			input1 = textin.split()[0]
 			try:
-				input2 = textin.split()[1]
+				input2 = textin[len(input1):].strip()
 			except:
 				input2 = ""
 			cli.command_interpreter(input1, input2)

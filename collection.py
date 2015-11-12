@@ -1,5 +1,8 @@
 import os
 
+import preferences
+from comic import comic
+
 class comiclist():
 	def __init__(self, name,  comicsin = []):
 		self.name = name
@@ -19,11 +22,12 @@ class comiclist():
 			directory = directory.strip("'")
 		except:
 			pass
+		print(directory)
 		comics = []
 		walk = os.walk(directory)
 		for directory in walk:
 			for filename in directory[2]:
-				if filename.split(".")[-1] in allowed_extensions:
+				if filename.split(".")[-1] in preferences.allowed_extensions:
 					comics.append(comic(filepath = directory[0] +"/" + filename))
 		print(comics)
 		return comics

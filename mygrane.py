@@ -6,8 +6,7 @@ import re
 from datetime import date
 import sqlite3
 
-allowed_extensions = ['cbz', 'cbr', 'pdf']
-database_dir = "../comics"
+
 
 import comic
 
