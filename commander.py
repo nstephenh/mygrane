@@ -8,7 +8,6 @@ class cli():
 			if input2 != "":
 				comic_list = comiclist("testing", comiclist.find_comic_files(input2))
 				comic_list.init_comics()
-				print(comic_list.contained_comics)
 			else:
 				print("initdir requires dir to init")
 		elif input1 in ["listcomics", "ls", "lc", "list"]:
