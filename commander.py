@@ -1,4 +1,4 @@
-import collection
+from collection import comiclist
 class cli():
 	#comic_list = comiclist(comiclist.find_comic_files("/home/nsh/Documents/Comics"))
 	#comic_list.init_comics()
@@ -6,8 +6,9 @@ class cli():
 		global comic_list
 		if input1 == "initdir":
 			if input2 != "":
-				comic_list = collection.comiclist(collection.comiclist.find_comic_files(input2))
+				comic_list = comiclist("testing", comiclist.find_comic_files(input2))
 				comic_list.init_comics()
+				print(comic_list.contained_comics)
 			else:
 				print("initdir requires dir to init")
 		elif input1 in ["listcomics", "ls", "lc", "list"]:
@@ -23,7 +24,6 @@ class cli():
 				print("Cannot sort when there are no comics to sort")
 		elif input1 == "exit" or input1 == 'q':
 			exit()
-
 	def start_cli():
 		while True:
 			textin = input("Enter Command:")

@@ -13,7 +13,8 @@ class comiclist():
 
 	def comicswithchar(self, character):
 		pass
-	def sortcomics(self): #sorts comics by series and publication date
+	def sortcomics(self): #sorts comics by series and publication date:
+		self.contained_comics.sort(key =lambda comic: comic.issue)
 		self.contained_comics.sort(key =lambda comic: comic.publication_date)
 		self.contained_comics.sort(key =lambda comic: comic.series)
 
