@@ -30,6 +30,15 @@ class comic():
 		"""
 		infoformat = "unknown"
 		filename = self.filepath.split("/")[-1] # Gives us the raw filename
+
+		filepath = self.filepath
+		#strip out ip addresses and other filesystem things that can be mistaken for dates or issue numbers
+		ipregex = re.compile("[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+		try:
+			filename == ipregex.split(filepath)[1]
+		except Exception as e:
+			print(e)
+		print(filename)
 		#print("Extracting info from " +self.filepath)
 		# get the publication date name from the filename
 		yearregex = re.compile("[1-2][90]\d\d")
@@ -37,26 +46,32 @@ class comic():
 		monthregexnem = re.compile("([01][0-9])-[0-3][0-9]-[1-2][90]\d\d")
 		dayregex = re.compile("[01][0-9]-([0-3][0-9])-[1-2][90]\d\d")
 		try:
-			year = int(yearregex.findall(self.filepath)[-1]) # returns the last date found in the filepath
+			year = int(yearregex.findall(filepath)[-1]) # returns the last date found in the filepath
 			self.date_accuracy = "year"
 		except Exception as e:
 			#print(e)
 			year = 1
 			self.date_accuracy = "null"
 		try:
-			month = int(monthregexcmc.search(self.filepath).group(1))
+			month = int(monthregexcmc.search(filepath).group(1))
+			if month == 0:
+				print("month is 00, error")
+				raise Exception
 			infoformat = "cmc"
 			self.date_accuracy = "month"
 		except Exception as e:
 			#print(e)
 			try:
-				month = int(monthregexnem.search(self.filepath).group(1))
+				month = int(monthregexnem.search(filepath).group(1))
+				if month == 0:
+					print("monthi is 00, error")
+					raise Exception
 				infoformat = "nem"
 				self.date_accuracy = "month"
 			except Exception:
 				month = 1
 		try:
-			day = int(dayregex.search(self.filepath).group(1))
+			day = int(dayregex.search(filepath).group(1))
 			self.date_accuracy = "day"
 		except Exception as e:
 			#print(e)
