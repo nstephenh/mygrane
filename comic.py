@@ -38,7 +38,6 @@ class comic():
 			filename == ipregex.split(filepath)[1]
 		except Exception as e:
 			print(e)
-		print(filename)
 		#print("Extracting info from " +self.filepath)
 		# get the publication date name from the filename
 		yearregex = re.compile("[1-2][90]\d\d")
@@ -54,19 +53,19 @@ class comic():
 			self.date_accuracy = "null"
 		try:
 			month = int(monthregexcmc.search(filepath).group(1))
+			infoformat = "cmc"
 			if month == 0:
 				print("month is 00, error")
 				raise Exception
-			infoformat = "cmc"
 			self.date_accuracy = "month"
 		except Exception as e:
 			#print(e)
 			try:
 				month = int(monthregexnem.search(filepath).group(1))
+				infoformat = "nem"
 				if month == 0:
 					print("monthi is 00, error")
 					raise Exception
-				infoformat = "nem"
 				self.date_accuracy = "month"
 			except Exception:
 				month = 1
@@ -79,10 +78,10 @@ class comic():
 		#print(str(year) + str(month) + str(day))
 		self.publication_date = date(year, month, day) # Set the publication date to the found date
 		
-		print(filename)
+		#print(filename)
 		if infoformat == "cmc": #split the filename at the month to get rid of those annoying numbers
 			filename = filename.split(str(year) + str(month))[-1]
-		print(filename)
+		#print(filename)
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\s\d{1,3})[\.| |\(]")
 			self.issue = int(issueregex.findall(filename)[-1])
@@ -95,7 +94,7 @@ class comic():
 			except Exception:
 				pass
 			nonumber = str(self.issue).join(filename.split(str(self.issue))[:-1]).strip('0').strip()
-			print(infoformat,filename, nonumber)
+			#print(infoformat,filename, nonumber)
 			self.series = nonumber
 		except Exception as e:
 			print("Series Name not found due to: " + str(e))
