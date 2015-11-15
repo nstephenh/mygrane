@@ -80,7 +80,7 @@ class comic():
 		
 		print(filename, infoformat)
 		if infoformat == "cmc": #split the filename at the month to get rid of those annoying numbers
-			filename = filename.split(str(year) + str(month))[-1]
+			filename = filename.split(str(year) + 0*(len(str(month))-1) +str(month))[-1]
 		print(filename)
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\s\d{1,3})[\.| |\(]")
