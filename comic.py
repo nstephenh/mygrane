@@ -78,7 +78,11 @@ class comic():
 			day = 1
 		#print(str(year) + str(month) + str(day))
 		self.publication_date = date(year, month, day) # Set the publication date to the found date
-
+		
+		print(filename)
+		if infoformat == "cmc": #split the filename at the month to get rid of those annoying numbers
+			filename = filename.split(str(year) + str(month))[-1]
+		print(filename)
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\s\d{1,3})[\.| |\(]")
 			self.issue = int(issueregex.findall(filename)[-1])
@@ -86,13 +90,13 @@ class comic():
 			print("No issue number found due to: " + str(e))
 
 		try: #Get the series name from the filename
-			beforeparen = filename.split("(")[0].strip()
-			nonumber = beforeparen.split(str(self.issue))[0].strip('0').strip()
-			#print(infoformat)
-			if infoformat != "cmc":
-				self.series = nonumber
-			else:
-				self.series = nonumber[7:]
+			try:
+				filename = filename.split("(")[0].strip()
+			except Exception:
+				pass
+			nonumber = str(self.issue).join(filename.split(str(self.issue))[:-1]).strip('0').strip()
+			print(infoformat,filename, nonumber)
+			self.series = nonumber
 		except Exception as e:
 			print("Series Name not found due to: " + str(e))
 			pass
