@@ -80,7 +80,7 @@ class comic():
 		self.publication_date = date(year, month, day) # Set the publication date to the found date
 
 		try: #Get the issue number from the filename
-			issueregex = re.compile("(\d{1,3})[\.| |\(]")
+			issueregex = re.compile("(\s\d{1,3})[\.| |\(]")
 			self.issue = int(issueregex.findall(filename)[-1])
 		except Exception as e:
 			print("No issue number found due to: " + str(e))
