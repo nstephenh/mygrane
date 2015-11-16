@@ -37,9 +37,19 @@ class comiclist():
 
 
 
-	def init_comics(self):
+	def init_comics(self, verbose = False):
 		for issue in self.contained_comics:
-			issue.get_info_from_filepath()
+			if verbose:
+				issue.get_info_from_filepath(verbose = True)
+			else:
+				issue.get_info_from_filepath()
+		#remove all the comics that don't have issue numbers
+		for issue in self.contained_comics:
+			if issue.issue == -1:
+				self.contained_comics.remove(issue)
+			if verbose:
+				#print("removed bad issue")
+				pass
 	def write_db(self):
 		"""Writes all of info in the comic objects to sqlite database"""
 		#create a new database file for this list

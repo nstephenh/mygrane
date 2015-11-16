@@ -18,7 +18,7 @@ class comic():
 	def addcharacter(self, character):
 		self.characters.append(character)
 
-	def get_info_from_filepath(self):
+	def get_info_from_filepath(self, verbose = False):
 		"""
 		Sets the following information from the filename in the following formats
 		issue - 1-3 digits followed by a space or .
@@ -38,7 +38,8 @@ class comic():
 			filename == ipregex.split(filepath)[1]
 		except Exception as e:
 			print(e)
-		#print("Extracting info from " +self.filepath)
+		if verbose:
+			print("Extracting info from " +self.filepath)
 		# get the publication date name from the filename
 		yearregex = re.compile("[1-2][90]\d\d")
 		monthregexcmc = re.compile("[1-2][90]\d\d([01][0-9])")
@@ -78,10 +79,12 @@ class comic():
 		#print(str(year) + str(month) + str(day))
 		self.publication_date = date(year, month, day) # Set the publication date to the found date
 		
-		#print(filename, infoformat)
+		if verbose:
+			print(filename, infoformat)
 		if infoformat == "cmc": #split the filename at the month to get rid of those annoying numbers
 			filename = filename.split(str(year) + "0"*(2-len(str(month))) +str(month))[-1]
-		#print(filename)
+		if verbose:
+			print(filename)
 		try: #Get the issue number from the filename
 			issueregex = re.compile("(\s\d{1,3})[\.| |\(]")
 			self.issue = int(issueregex.findall(filename)[-1])
@@ -94,7 +97,8 @@ class comic():
 			except Exception:
 				pass
 			nonumber = str(self.issue).join(filename.split(str(self.issue))[:-1]).strip('0').strip()
-			#print(infoformat,filename, nonumber)
+			if verbose:
+				print(infoformat,nonumber, self.issue)
 			self.series = nonumber
 		except Exception as e:
 			print("Series Name not found due to: " + str(e))
