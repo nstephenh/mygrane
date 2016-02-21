@@ -1,6 +1,8 @@
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
+from gi.repository.GdkPixbuf import Pixbuf
+
 
 stuff = [["Test 1", "./Example Covers/test cover1.jpg"],
          ["Test 2", "./Example Covers/test cover 2.jpg"],
@@ -10,6 +12,9 @@ stuff = [["Test 1", "./Example Covers/test cover1.jpg"],
 titleFlow = Gtk.FlowBox()
 titleFlow.set_valign(Gtk.Align.START)
 
+window_width = 700
+preview_width = window_width/2
+
 class LibraryManager(Gtk.Window):
 
 
@@ -18,14 +23,16 @@ class LibraryManager(Gtk.Window):
         titleScroll = Gtk.ScrolledWindow()
         titleScroll.add(titleFlow)
 
-        self.set_default_size(600, 700)
+        self.set_default_size(window_width, 400)
         self.add(titleScroll)
         self.show_all()
 
     def add_title(self, title_object):
         button = Gtk.Button()
         #button.set_label(title_object[0])
-        button.add(Gtk.Image.new_from_file(title_object[1]))
+        pixbuf = Pixbuf.new_from_file_at_scale(title_object[1], -1, preview_width, True)
+        img = Gtk.Image.new_from_pixbuf(pixbuf)
+        button.add(img)
         print('added a cover: ' + title_object[0])
         return button
 
