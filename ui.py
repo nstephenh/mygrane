@@ -15,8 +15,8 @@ titleFlow.set_valign(Gtk.Align.START)
 window_width = 700
 preview_width = window_width/2
 
-class LibraryManager(Gtk.Window):
 
+class LibraryManager(Gtk.Window):
 
     def __init__(self):
         Gtk.Window.__init__(self)
@@ -37,18 +37,15 @@ class LibraryManager(Gtk.Window):
         self.add(titleScroll)
         self.show_all()
 
-
-
-
     def add_title(self, title_object):
         button = Gtk.Button()
-        h = title_object[0].get_height()
-        w = title_object[0].get_width()
-        r = h/w # Preserve Aspect Ratio
-        pixbuf = Pixbuf.scale_simple(title_object[0], preview_width, preview_width*r, True)
+        h = title_object.thumbnail.get_height()
+        w = title_object.thumbnail.get_width()
+        r = h/w  # Preserve Aspect Ratio
+        pixbuf = Pixbuf.scale_simple(title_object.thumbnail, preview_width, preview_width*r, True)
         img = Gtk.Image.new_from_pixbuf(pixbuf)
         button.add(img)
-        print('added a cover: ' )
+        print('added a cover: ' + title_object.file)
         return button
 
     def populate_titles(self):
