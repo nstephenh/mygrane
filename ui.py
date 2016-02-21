@@ -3,6 +3,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository.GdkPixbuf import Pixbuf
 
+from collection import Series
+
+scandirectory = "~/Documents/Comics/Test"
 
 stuff = [["Test 1", "./Example Covers/test cover1.jpg"],
          ["Test 2", "./Example Covers/test cover 2.jpg"],
@@ -19,17 +22,28 @@ class LibraryManager(Gtk.Window):
 
 
     def __init__(self):
-        Gtk.Window.__init__(self, title="Library Manager")
+        Gtk.Window.__init__(self)
         titleScroll = Gtk.ScrolledWindow()
         titleScroll.add(titleFlow)
+
+        hb = Gtk.HeaderBar()
+        hb.set_show_close_button(True)
+        hb.props.title = "Library Manager"
+        self.set_titlebar(hb)
+
+        print("Scanning files...")
+        stuff = Series("../../../Documents/Comics/Test/")
+
 
         self.set_default_size(window_width, 400)
         self.add(titleScroll)
         self.show_all()
 
+
+
+
     def add_title(self, title_object):
         button = Gtk.Button()
-        #button.set_label(title_object[0])
         pixbuf = Pixbuf.new_from_file_at_scale(title_object[1], -1, preview_width, True)
         img = Gtk.Image.new_from_pixbuf(pixbuf)
         button.add(img)
