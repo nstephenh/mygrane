@@ -6,16 +6,21 @@ gi.require_version('Gtk', '3.0')
 from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
 from preferences import *
+
+
 class Comic:
 
-    thumbnail = None
-    name = ""
-    containing_directory = ""
-    file = ""
-
     def __init__(self, containing_directory, file):
+        self.thumbnail = None
         self.containing_directory = containing_directory
         self.file = file
+        extension = (file.split(".")[-1])
+        if extension in ["cbr", "cbz", "rar", "zip"]:
+            print(file)
+            if extension in ("cbz", "zip"):
+                self.set_thumbnail_from_zip()
+            if extension in ("cbr", "zip"):
+                self.set_thumbnail_from_rar()
 
     def set_thumbnail_from_zip(self):
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)

@@ -3,7 +3,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository.GdkPixbuf import Pixbuf
 
-from collection import Series
+from collection import Collection
+from preferences import *
 
 scandirectory = "~/Documents/Comics/Test"
 
@@ -28,11 +29,20 @@ class LibraryManager(Gtk.Window):
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.props.title = "Library Manager"
+
+        viewer_store = Gtk.ListStore(str)
+        for viewer in viewers:
+            viewer_store.append([viewer])
+
+        viewselect = Gtk.ComboBox.new_with_model(viewer_store)
+        viewselect.connect("changed", self.on_viewer_changed)
+
+        hb.add(viewselect)
         self.set_titlebar(hb)
 
         print("Scanning files...")
         global stuff
-        stuff = Series("../../../Documents/Comics/Test/").contains
+        stuff = Collection("../../../Documents/Comics/Test/")
         self.populate_titles()
 
         self.set_default_size(window_width, 400)
@@ -47,10 +57,12 @@ class LibraryManager(Gtk.Window):
         return button
 
     def populate_titles(self):
-        for title in stuff:
+        for title in stuff.contains:
             titleFlow.add(self.add_title(title))
         self.set_focus()
 
+    def on_viewer_changed(self):
+        pass
 mainWindow = LibraryManager()
 mainWindow.connect("delete-event", Gtk.main_quit)
 Gtk.main()
