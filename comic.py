@@ -5,10 +5,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
-
-
-
-
+from preferences import *
 class Comic:
 
     thumbnail = None
@@ -25,7 +22,9 @@ class Comic:
         for file_in_zip in zf.namelist()[:2]:
             if ".jpg" in file_in_zip.lower() or ".png" in file_in_zip.lower():
                 print("Found image: ", file_in_zip, " -- ")
-                return self.set_thumbnail(zf.read(file_in_zip))
+                cover = zf.read(file_in_zip)
+                zf.close()
+                return self.set_thumbnail(cover)
             else:
                 print("First image not an image: " + file_in_zip)
         return False
@@ -35,7 +34,8 @@ class Comic:
         for file_in_rar in sorted(rf.namelist())[:2]:
             if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
                 print("Found image: ", file_in_rar, " -- ")
-                return self.set_thumbnail(rf.read(file_in_rar))
+                cover = rf.read(file_in_rar)
+                return self.set_thumbnail(cover)
             else:
                 print("First image not an image: " + file_in_rar)
         return False
@@ -47,7 +47,12 @@ class Comic:
             loader = PixbufLoader()
             loader.write(image_to_use)
             loader.close()
-            self.thumbnail = loader.get_pixbuf()
+            thumbnail = loader.get_pixbuf()
+            h = thumbnail.get_height()
+            w = thumbnail.get_width()
+            r = h/w  # Preserve Aspect Ratio
+            pixbuf = Pixbuf.scale_simple(thumbnail, cover_width, cover_width*r, True)
+            self.thumbnail = pixbuf
             return True
         except Exception:
             print(Exception)

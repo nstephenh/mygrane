@@ -22,6 +22,8 @@ class LibraryManager(Gtk.Window):
         Gtk.Window.__init__(self)
         titleScroll = Gtk.ScrolledWindow()
         titleScroll.add(titleFlow)
+        self.set_default_size(window_width, 400)
+
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
@@ -39,11 +41,7 @@ class LibraryManager(Gtk.Window):
 
     def add_title(self, title_object):
         button = Gtk.Button()
-        h = title_object.thumbnail.get_height()
-        w = title_object.thumbnail.get_width()
-        r = h/w  # Preserve Aspect Ratio
-        pixbuf = Pixbuf.scale_simple(title_object.thumbnail, preview_width, preview_width*r, True)
-        img = Gtk.Image.new_from_pixbuf(pixbuf)
+        img = Gtk.Image.new_from_pixbuf(title_object.thumbnail)
         button.add(img)
         print('added a cover: ' + title_object.file)
         return button
@@ -51,9 +49,8 @@ class LibraryManager(Gtk.Window):
     def populate_titles(self):
         for title in stuff:
             titleFlow.add(self.add_title(title))
-        self.show_all()
+        self.set_focus()
 
 mainWindow = LibraryManager()
-mainWindow.populate_titles()
 mainWindow.connect("delete-event", Gtk.main_quit)
 Gtk.main()
