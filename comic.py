@@ -1,8 +1,12 @@
 import os
+import zipfile
+from unrar import rarfile
 import gi
 gi.require_version('Gtk', '3.0')
-import zipfile
 from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
+
+
+
 
 
 class Comic:
@@ -25,6 +29,18 @@ class Comic:
             else:
                 print("First image not an image: " + file_in_zip)
         return False
+
+    def set_thumbnail_from_rar(self):
+        rf = rarfile.RarFile(self.containing_directory + "/" + self.file)
+        for file_in_rar in sorted(rf.namelist())[:2]:
+            if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
+                print("Found image: ", file_in_rar, " -- ")
+                return self.set_thumbnail(rf.read(file_in_rar))
+            else:
+                print("First image not an image: " + file_in_rar)
+        return False
+
+
 
     def set_thumbnail(self, image_to_use):
         try:

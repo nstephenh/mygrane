@@ -18,6 +18,10 @@ class Series:
                     issue = Comic(containing_directory, file)
                     if issue.set_thumbnail_from_zip():
                         self.contains.append(issue)
+                if extension == "cbr":
+                    issue = Comic(containing_directory, file)
+                    if issue.set_thumbnail_from_rar():
+                        self.contains.append(issue)
 
 
 
