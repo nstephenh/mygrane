@@ -26,26 +26,26 @@ class Comic:
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)
         for file_in_zip in zf.namelist()[:2]:
             if ".jpg" in file_in_zip.lower() or ".png" in file_in_zip.lower():
-                print("Found image: ", file_in_zip, " -- ")
+                #print("Found image: ", file_in_zip, " -- ")
                 cover = zf.read(file_in_zip)
                 zf.close()
                 return self.set_thumbnail(cover)
             else:
-                print("First image not an image: " + file_in_zip)
+                pass
+                #print("First image not an image: " + file_in_zip)
         return False
 
     def set_thumbnail_from_rar(self):
         rf = rarfile.RarFile(self.containing_directory + "/" + self.file)
         for file_in_rar in sorted(rf.namelist())[:2]:
             if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
-                print("Found image: ", file_in_rar, " -- ")
+                #print("Found image: ", file_in_rar, " -- ")
                 cover = rf.read(file_in_rar)
                 return self.set_thumbnail(cover)
             else:
-                print("First image not an image: " + file_in_rar)
+                pass
+                #print("First image not an image: " + file_in_rar)
         return False
-
-
 
     def set_thumbnail(self, image_to_use):
         try:
