@@ -32,8 +32,8 @@ class LibraryManager(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        maintitleScroll = Gtk.ScrolledWindow()
-        maintitleScroll.add(titleFlow)
+        self.mainTitleScroll = Gtk.ScrolledWindow()
+        self.mainTitleScroll.add(titleFlow)
         self.set_default_size(window_width, 400)
 
 
@@ -48,7 +48,12 @@ class LibraryManager(Gtk.Window):
         viewselect = Gtk.ComboBox.new_with_model(viewer_store)
         viewselect.connect("changed", self.on_viewer_changed)
 
-        hb.add(viewselect)
+        #hb.add(viewselect)
+
+        back_button = Gtk.Button("<")
+        back_button.connect("clicked", self.view_library)
+        hb.add(back_button)
+
         self.set_titlebar(hb)
 
         global stuff
@@ -56,8 +61,8 @@ class LibraryManager(Gtk.Window):
         self.populate_titles(stuff, titleFlow)
 
         self.set_default_size(window_width, 400)
-        dastack.add(maintitleScroll)
-        dastack.set_visible_child(maintitleScroll)
+        dastack.add(self.mainTitleScroll)
+        dastack.set_visible_child(self.mainTitleScroll)
         self.add(dastack)
         self.show_all()
 
@@ -72,6 +77,10 @@ class LibraryManager(Gtk.Window):
         elif switch is Series:
             button.connect("clicked", self.on_series_click, title_object.file)
         return button
+
+    def view_library(self, button):
+        dastack.set_visible_child(self.mainTitleScroll)
+        self.show_all()
 
     def populate_titles(self, collection, flow):
         for title in collection.contains:
