@@ -14,13 +14,21 @@ class Comic:
         self.thumbnail = None
         self.containing_directory = containing_directory
         self.file = file
-        extension = (file.split(".")[-1])
-        if extension in ["cbr", "cbz", "rar", "zip"]:
-            print(file)
-            if extension in ("cbz", "zip"):
-                self.set_thumbnail_from_zip()
-            if extension in ("cbr", "zip"):
-                self.set_thumbnail_from_rar()
+        try:
+            self.title = file.split('(')[0]
+        except Exception:
+            self.title = file.split('.')[0]
+
+        self.extension = (file.split(".")[-1])
+
+    def set_thumbnail(self):
+        switch  = self.extension;
+        if switch in ("cbz", "zip"):
+            self.set_thumbnail_from_zip()
+        elif switch in ("cbr", "zip"):
+            self.set_thumbnail_from_rar()
+        else:
+            pass
 
     def set_thumbnail_from_zip(self):
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)
@@ -29,7 +37,7 @@ class Comic:
                 #print("Found image: ", file_in_zip, " -- ")
                 cover = zf.read(file_in_zip)
                 zf.close()
-                return self.set_thumbnail(cover)
+                return self.set_thumbnail_to_file(cover)
             else:
                 pass
                 #print("First image not an image: " + file_in_zip)
@@ -41,13 +49,13 @@ class Comic:
             if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
                 #print("Found image: ", file_in_rar, " -- ")
                 cover = rf.read(file_in_rar)
-                return self.set_thumbnail(cover)
+                return self.set_thumbnail_to_file(cover)
             else:
                 pass
                 #print("First image not an image: " + file_in_rar)
         return False
 
-    def set_thumbnail(self, image_to_use):
+    def set_thumbnail_to_file(self, image_to_use):
         try:
             loader = PixbufLoader()
             loader.write(image_to_use)

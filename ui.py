@@ -2,7 +2,7 @@ import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from gi.repository.GdkPixbuf import Pixbuf
+
 
 from collection import Series, Collection
 from comic import Comic
@@ -10,7 +10,7 @@ from preferences import *
 from subprocess import call
 
 
-scandirectory = "~/Documents/Comics/Test"
+
 
 global stuff
 
@@ -57,7 +57,7 @@ class LibraryManager(Gtk.Window):
         self.set_titlebar(hb)
 
         global stuff
-        stuff = Collection("/home/nsh/Documents/Comics/test2/")
+        stuff = Collection("/home/nsh/Documents/Comics/Test/")
         self.populate_titles(stuff, titleFlow)
 
         self.set_default_size(window_width, 400)
@@ -75,7 +75,7 @@ class LibraryManager(Gtk.Window):
         if switch is Comic:
             button.connect("clicked", self.on_comic_click, title_object.containing_directory + "/" + title_object.file)
         elif switch is Series:
-            button.connect("clicked", self.on_series_click, title_object.file)
+            button.connect("clicked", self.on_series_click, title_object)
         return button
 
     def view_library(self, button):
@@ -91,12 +91,12 @@ class LibraryManager(Gtk.Window):
     def on_viewer_changed(self):
         pass
 
-    def on_series_click(self, button, dir_to_open):
+    def on_series_click(self, button, series):
         #Switch the window to something else
         newFlow = Gtk.FlowBox()
         newFlow.set_valign(Gtk.Align.START)
 
-        self.populate_titles(Collection(dir_to_open), flow=newFlow)
+        self.populate_titles(series.to_collection(), flow=newFlow)
         newtitleScroll = Gtk.ScrolledWindow()
         newtitleScroll.add(newFlow)
         newtitleScroll.show()
