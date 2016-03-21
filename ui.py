@@ -9,9 +9,6 @@ from comic import Comic
 from preferences import *
 from subprocess import call
 
-
-
-
 global stuff
 
 global titleFlow
@@ -55,7 +52,7 @@ class LibraryManager(Gtk.Window):
         hb.add(back_button)
 
         self.set_titlebar(hb)
-
+        self.show_all()
         global stuff
         stuff = Collection("/home/nsh/Documents/Comics/Test/")
         self.populate_titles(stuff, titleFlow)
@@ -67,6 +64,7 @@ class LibraryManager(Gtk.Window):
         self.show_all()
 
     def add_title(self, title_object):
+        title_object.set_thumbnail()
         button = Gtk.Button()
         img = Gtk.Image.new_from_pixbuf(title_object.thumbnail)
         button.add(img)
@@ -86,7 +84,7 @@ class LibraryManager(Gtk.Window):
         for title in collection.contains:
             flow.add(self.add_title(title))
         self.set_focus()
-        self.show_all()
+        #self.show_all()
 
     def on_viewer_changed(self):
         pass
@@ -108,6 +106,7 @@ class LibraryManager(Gtk.Window):
         call(["evince" + ' "' + file_to_open + '"', "-1"], shell=True)
         #os.system("evince" + ' "' + file_to_open + '"')
         print(file_to_open)
+
 
 mainWindow = LibraryManager()
 mainWindow.connect("delete-event", Gtk.main_quit)
