@@ -20,8 +20,10 @@ dastack = Gtk.Stack()
 dastack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 dastack.set_transition_duration(1000)
 
-window_width = 700
-preview_width = window_width/2
+import preferences
+
+window_width = preferences.window_width
+preview_width = preferences.cover_width
 
 
 class LibraryManager(Gtk.Window):
@@ -54,7 +56,7 @@ class LibraryManager(Gtk.Window):
         self.set_titlebar(hb)
         self.show_all()
         global stuff
-        stuff = Collection("/home/nsh/Documents/Comics/Test/")
+        stuff = Collection(preferences.library_directory)
         self.populate_titles(stuff, titleFlow)
 
         self.set_default_size(window_width, 400)
