@@ -32,6 +32,7 @@ class Comic:
         self.pubyear = 0
         self.title = ""
         self.issue = 0
+        self.set_info_from_name()
 
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
