@@ -1,5 +1,8 @@
 
+window_width = 700
 cover_width = 300
+
+library_directory = "/home/nsh/Documents/Comics/Test/"
 
 viewers = ["evince"]
 current_viewer = ""
