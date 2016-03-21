@@ -3,23 +3,62 @@ import zipfile
 from unrar import rarfile
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
 from preferences import *
 
+import re
 
 class Comic:
+    """
+    Object that represents a comic. Contains the following information
+    containing_directory - The location of the comic
+    file - the filename of the comic in containing_directory
+    extension - the extension of the comic
+    thumbnail - a pixbuf of the first page of the comic
+
+    pubyear - The year of publication of the comic, automatically determined by the last string in the filename matching
+        the regex "[1-2][90]\d\d"
+    issue - Issue number
+    title - The title of the comic
+    """
 
     def __init__(self, containing_directory, file):
         self.thumbnail = None
         self.containing_directory = containing_directory
         self.file = file
-        try:
-            self.title = file.split('(')[0]
-        except Exception:
-            self.title = file.split('.')[0]
-
         self.extension = (file.split(".")[-1])
+        self.pubyear = 0
+        self.title = ""
+        self.issue = 0
+
+    def __str__(self):
+        return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
+
+    def set_info_from_name(self):
+        yearregex = re.compile("[1-2][90]\d\d")
+        try:
+            self.pubyear = int(yearregex.findall(self.file)[-1])
+            try:
+                frontpart = self.file.split('(')[0]
+                self.issue = int(frontpart.split()[-1])
+                try:
+                    longname = " ".join(frontpart.split()[:-1])
+                    if re.match("v\d", longname.split()[-1]):
+                        self.title = " ".join(longname.split()[:-1])
+                        print("its got a volume number")
+                    else:
+                        self.title = longname
+                except Exception:
+                    print("File does not do something")
+            except Exception:
+                print("File does not have a parentheisis")
+        except Exception:
+            print("Unable to find year of publication")
+
+
+
 
     def set_thumbnail(self):
         switch  = self.extension;
