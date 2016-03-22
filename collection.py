@@ -44,8 +44,8 @@ class Series:
         theirsbase.lower
         if oursbase == theirsbase:
             return True
-        oursbase = re.sub("^[0-9a-z]", "", oursbase)
-        theirsbase = re.sub("^[0-9a-z]", "", theirsbase)
+        oursbase = re.sub("[^0-9a-z]", "", oursbase)
+        theirsbase = re.sub("[^0-9a-z]", "", theirsbase)
         if oursbase == theirsbase:
             # If the only difference is special characters and whitespace, then they are probably the same
             return True
@@ -110,10 +110,12 @@ class Collection:
                         if not test:
                             try:
                                 olditemdir = item.containing_directory
+                                item.title = temp_Contains[index].name
                                 item.containing_directory += "/" + item.title + " (" + str(item.pubyear) + ")/"
                                 os.rename(olditemdir + item.file, item.containing_directory + item.file)
-                            except os.error:
-                                print("Error, comic already exists in directory")
+                            except os.error as e:
+                                print("Error, comic already exists in directory or")
+                                print(e)
                         temp_Contains[index].contains.append(item)
                         print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                         found = True
