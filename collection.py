@@ -10,6 +10,7 @@ class Series:
         self.issue = -1
         if contents != []:
             self.contains = contents
+            self.file = self.contains[0].containing_directory
         else:
             self.contains = []
             print("Initializing " + location)
@@ -21,7 +22,7 @@ class Series:
                     if preferences.preload_cover_images:
                         issue.set_thumbnail()
                     self.contains.append(issue)
-        self.file = self.contains[0].containing_directory
+            self.file = location
         if name == "":
             self.name = self.contains[0].title
         self.thumbnail = None
@@ -105,8 +106,8 @@ class Collection:
                         # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
                         # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
                     if temp_Contains[index].name_close_enough(item.title) \
-                            and (temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1] \
-                            and (temp_Contains[index].contains[-1].issue - item.issue) == -1:
+                            and (item.pubyear - temp_Contains[index].contains[-1].pubyear) in [0, 1] \
+                            and (item.issue - temp_Contains[index].contains[-1].issue) == 1:
                         if not test:
                             try:
                                 olditemdir = item.containing_directory
