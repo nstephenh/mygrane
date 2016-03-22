@@ -107,6 +107,13 @@ class Collection:
                     if temp_Contains[index].name_close_enough(item.title) \
                             and (temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1] \
                             and (temp_Contains[index].contains[-1].issue - item.issue) == -1:
+                        if not test:
+                            try:
+                                olditemdir = item.containing_directory
+                                item.containing_directory += "/" + item.title + " (" + str(item.pubyear) + ")/"
+                                os.rename(olditemdir + item.file, item.containing_directory + item.file)
+                            except os.error:
+                                print("Error, comic already exists in directory")
                         temp_Contains[index].contains.append(item)
                         print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                         found = True
@@ -114,7 +121,21 @@ class Collection:
                 if not found:
                     # If there is no existing series, create a new one
                     print("Created new series for " + item.title)
-                    temp_Contains.append(Series(name=item.title, contents=[item]))
+                    if not test:
+                        try:
+
+                            olditemdir = item.containing_directory
+                            createddir = "/" + item.title + " (" + str(item.pubyear) + ")"
+                            os.mkdir(olditemdir + createddir)
+                            item.containing_directory += createddir + "/"
+                            os.rename(olditemdir + item.file, item.containing_directory + item.file)
+                            temp_Contains.append(Series(name=item.title,
+                                                        location=item.containing_directory,  contents=[item]))
+                        except os.error:
+                            print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
+                    else:
+                        temp_Contains.append(Series(name=item.title, contents=[item]))
+
             else:
                 temp_Contains.append(item)
         # ToDo (Maybe): If series only contains one item, make it a comic object
