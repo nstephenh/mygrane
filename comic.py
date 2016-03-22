@@ -45,6 +45,12 @@ class Comic:
                 frontpart = self.file.split('(')[0]
                 self.issue = int(frontpart.split()[-1])
                 try:
+                    # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
+                    coversplit = re.split("\d{1,2} of \d{1,2} covers", frontpart, flags=re.IGNORECASE)[0]
+                    self.issue = int(coversplit.split()[-1])
+                except Exception:
+                    print("Not using alt covers")
+                try:
                     longname = " ".join(frontpart.split()[:-1])
                     if re.match("v\d", longname.split()[-1]):
                         self.title = " ".join(longname.split()[:-1])
@@ -57,9 +63,6 @@ class Comic:
                 print("File does not have a parentheisis")
         except Exception:
             print("Unable to find year of publication")
-
-
-
 
     def set_thumbnail(self):
         switch  = self.extension;
