@@ -1,6 +1,7 @@
 import os
 import preferences
 from comic import Comic
+import re
 
 
 class Series:
@@ -35,10 +36,25 @@ class Series:
         return Collection(contains=self.contains)
 
     def name_close_enough(self, theirs):
+        oursbase = self.name
+        theirsbase = theirs
         if self.name == theirs:
             return True
-        if self.name.lower == theirs.lower:
+        oursbase.lower
+        theirsbase.lower
+        if oursbase == theirsbase:
             return True
+        oursbase = re.sub("^[0-9a-z]", "", oursbase)
+        theirsbase = re.sub("^[0-9a-z]", "", theirsbase)
+        if oursbase == theirsbase:
+            # If the only difference is special characters and whitespace, then they are probably the same
+            return True
+        re.sub('and', "",  oursbase, flags=re.IGNORECASE)
+        re.sub('and', "",  theirsbase, flags=re.IGNORECASE)
+        if oursbase == theirsbase:
+            # same as above but with provisions for the word and (since it is sometimes replaced with ampersand)
+            return True
+
         return False
 
     def to_string(self, indent=False):
