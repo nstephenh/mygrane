@@ -6,6 +6,7 @@ from comic import Comic
 class Series:
     def __init__(self, location="", name="", contents=[]):
         self.name = name
+        self.issue = -1
         if contents != []:
             self.contains = contents
         else:
@@ -20,6 +21,8 @@ class Series:
                         issue.set_thumbnail()
                     self.contains.append(issue)
         self.file = self.contains[0].containing_directory
+        if name == "":
+            self.name = self.contains[0].title
         self.thumbnail = None
         print()
 
