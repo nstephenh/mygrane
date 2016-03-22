@@ -43,13 +43,14 @@ class Comic:
             self.pubyear = int(yearregex.findall(self.file)[-1])
             try:
                 frontpart = self.file.split('(')[0]
-                self.issue = int(frontpart.split()[-1])
                 try:
                     # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
-                    coversplit = re.split("\d{1,2} of \d{1,2} covers", frontpart, flags=re.IGNORECASE)[0]
+                    coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
                     self.issue = int(coversplit.split()[-1])
+                    frontpart = coversplit
                 except Exception:
                     print("Not using alt covers")
+                self.issue = int(frontpart.split()[-1])
                 try:
                     longname = " ".join(frontpart.split()[:-1])
                     if re.match("v\d", longname.split()[-1]):
@@ -59,8 +60,9 @@ class Comic:
                         self.title = longname
                 except Exception:
                     print("File does not do something")
-            except Exception:
+            except Exception as e:
                 print("File does not have a parentheisis")
+                print(e)
         except Exception:
             print("Unable to find year of publication")
 
