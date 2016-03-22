@@ -101,9 +101,9 @@ class Collection:
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
                     # then append the issue to the
-                    print(item.title + '\t' + str(temp_Contains[index].name_close_enough(item.title)) + '\t'
-                          + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
-                          + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
+                    # print(item.title + '\t' + str(temp_Contains[index].name_close_enough(item.title)) + '\t'
+                        # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
+                        # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
                     if temp_Contains[index].name_close_enough(item.title) \
                             and (temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1] \
                             and (temp_Contains[index].contains[-1].issue - item.issue) == -1:
