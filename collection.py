@@ -25,6 +25,7 @@ class Series:
             self.file = location
         if name == "":
             self.name = self.contains[0].title
+        self.pubyear = self.contains[0].pubyear
         self.thumbnail = None
         print()
 
@@ -112,7 +113,7 @@ class Collection:
                             try:
                                 olditemdir = item.containing_directory
                                 item.title = temp_Contains[index].name
-                                item.containing_directory += "/" + item.title + " (" + str(item.pubyear) + ")/"
+                                item.containing_directory += "/" + item.title + " (" + str(temp_Contains[index].pubyear) + ")/"
                                 os.rename(olditemdir + item.file, item.containing_directory + item.file)
                             except os.error as e:
                                 print("Error, comic already exists in directory or")
