@@ -5,7 +5,6 @@ walk = os.walk(".")
 for directory in walk:
     for filename in directory[2]:
         error = False
-        print (filename)
         yearregex = re.compile("[1-2][90]\d\d")
         try:
             pubyear = int(yearregex.findall(filename)[-1])
@@ -19,4 +18,5 @@ for directory in walk:
             print("Unable to find year of publication")
             error = True
         if error:
-            os.system("mv '" + filename + "' '" + "00Sort/" )
+            print(filename)
+            os.system("mv '" + filename + "' 00Sort/")
