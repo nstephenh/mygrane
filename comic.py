@@ -46,11 +46,17 @@ class Comic:
                 try:
                     # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
                     coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
-                    self.issue = int(coversplit.split()[-1])
-                    frontpart = coversplit
                 except Exception:
                     print("Not using alt covers")
-                self.issue = int(frontpart.split()[-1])
+
+                issuestring = coversplit.split()[-1]
+                try:
+                    self.issue = float(issuestring)  # Using floats adds supports for .1 issues, etc
+                except Exception:
+                    # In case the issue number is something like 15AU, try stripping out not numeric characters
+                    issuestring = re.sub("[^0-9]", "", issuestring)
+                    self.issue = float(issuestring)
+                frontpart = coversplit
                 try:
                     longname = " ".join(frontpart.split()[:-1])
                     if re.match("v\d", longname.split()[-1]):
