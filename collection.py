@@ -42,8 +42,8 @@ class Series:
         theirsbase = theirs
         if self.name == theirs:
             return True
-        oursbase.lower
-        theirsbase.lower
+        oursbase = oursbase.lower
+        theirsbase = theirsbase.lower
         if oursbase == theirsbase:
             return True
         oursbase = re.sub("[^0-9a-z]", "", oursbase)
