@@ -102,7 +102,7 @@ class Collection:
                     # if the issue  we are looking at has a name close to the new comic
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
-                    # then append the issue to the
+                    # then append the issue to the series
                     # print(item.title + '\t' + str(temp_Contains[index].name_close_enough(item.title)) + '\t'
                         # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
                         # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
@@ -138,6 +138,7 @@ class Collection:
                         except os.error:
                             print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                     else:
+                        # ToDo: Add in the ability to update to existing series under certain circumstances
                         temp_Contains.append(Series(name=item.title, contents=[item]))
 
             else:
