@@ -6,7 +6,10 @@ def bring_out(path):
             if os.path.isdir(absPath):
                 bring_out(absPath)
                 print(thing)
-                os.rename(absPath, thing)
+                try:
+                    os.rename(absPath, thing)
+                except OSError as warning:
+                    print(warning)
 
 
 for item in sorted(os.listdir(".")):
