@@ -40,6 +40,26 @@ class Comic:
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
 
+    def move_file(self, dir_name=None, series=None):
+        """
+
+        :param dir_name: moves the file to this directory (asbsolute path)
+        :param series: move the file to within this series
+        :return: True if no errors thrown
+        """
+        try:
+            olditemdir = self.containing_directory + "/"
+            if series:
+                self.title = series.name
+                self.containing_directory += "/" + series.file + "/"
+            if dir_name:
+                self.containing_directory = dir_name
+            os.rename(olditemdir + self.file, self.containing_directory + self.file)
+            return True
+        except os.error as e:
+            print("Error, comic already exists in directory or")
+            print(e)
+            return False
     def set_info_from_name(self):
         self.tags = re.findall("\((.^)\)", self.file)
         yearregex = re.compile("\(([1-2][90]\d\d)\)")
