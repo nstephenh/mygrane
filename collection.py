@@ -88,7 +88,7 @@ class Collection:
                     item.set_thumbnail()
                 self.contains.append(item)
 
-    def sort(self, test=True):
+    def sort(self, test=True, allow_duplicates=False):
         # presort self.contains to go by issue number
         self.contains.sort(key=lambda x: x.issue)
 
@@ -108,7 +108,9 @@ class Collection:
                         # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
                     if temp_Contains[index].name_close_enough(item.title) \
                             and (item.pubyear - temp_Contains[index].contains[-1].pubyear) in [0, 1] \
-                            and (item.issue - temp_Contains[index].contains[-1].issue) == 1:
+                            and ((item.issue - temp_Contains[index].contains[-1].issue) == 1 \
+                                 or (item.issue - temp_Contains[index].contains[-1].issue) in [0, 1] \
+                                 and allow_duplicates):
                         if not test:
                             try:
                                 olditemdir = item.containing_directory + "/"
