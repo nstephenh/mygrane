@@ -137,10 +137,7 @@ class Collection:
                             and (item.pubyear - lastissue.pubyear) in [0, 1]:
                         if not test:
                             try:
-                                olditemdir = item.containing_directory + "/"
-                                item.title = temp_Contains[index].name
-                                item.containing_directory += "/" + item.title + " (" + str(temp_Contains[index].pubyear) + ")/"
-                                os.rename(olditemdir + item.file, item.containing_directory + item.file)
+                                item.move_file(series=temp_Contains[index])
                             except os.error as e:
                                 print("Error, comic already exists in directory or")
                                 print(e)

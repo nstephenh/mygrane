@@ -51,7 +51,7 @@ class Comic:
             olditemdir = self.containing_directory + "/"
             if series:
                 self.title = series.name
-                self.containing_directory += "/" + series.file + "/"
+                self.containing_directory = series.file + "/"
             if dir_name:
                 self.containing_directory = dir_name
             os.rename(olditemdir + self.file, self.containing_directory + self.file)
