@@ -54,8 +54,13 @@ class Comic:
                     self.issue = float(issuestring)  # Using floats adds supports for .1 issues, etc
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
-                    issuestring = re.sub("[^0-9]", "", issuestring)
-                    self.issue = float(issuestring)
+                    try:
+                        issuestring = re.sub("[^0-9]", "", issuestring)
+                        self.issue = float(issuestring)
+                    except Exception:
+                        #Comic has no filename
+                        self.title = coversplit
+                        return
                 frontpart = coversplit
                 try:
                     longname = " ".join(frontpart.split()[:-1])
