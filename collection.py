@@ -99,6 +99,7 @@ class Collection:
                 index = 0
                 found = False
                 while index < len(temp_Contains):
+                    lastissue = temp_Contains[index].contains[-1]
                     # if the issue  we are looking at has a name close to the new comic
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
@@ -107,9 +108,9 @@ class Collection:
                         # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
                         # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
                     if temp_Contains[index].name_close_enough(item.title) \
-                            and (item.pubyear - temp_Contains[index].contains[-1].pubyear) in [0, 1] \
-                            and ((item.issue - temp_Contains[index].contains[-1].issue) == 1 \
-                                 or (item.issue - temp_Contains[index].contains[-1].issue) in [0, 1] \
+                            and (item.pubyear - lastissue.pubyear) in [0, 1] \
+                            and ((0 < item.issue - lastissue.issue) <= 1 \
+                                 or (0 <= item.issue - lastissue.issue) <= 1 \
                                  and allow_duplicates):
                         if not test:
                             try:
