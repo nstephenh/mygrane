@@ -10,6 +10,7 @@ from preferences import *
 
 import re
 
+
 class Comic:
     """
     Object that represents a comic. Contains the following information
@@ -33,12 +34,14 @@ class Comic:
         self.title = ""
         self.issue = 0
         self.isTPB = False
+        self.tags = []
         self.set_info_from_name()
 
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
 
     def set_info_from_name(self):
+        self.tags = re.findall("\((.^)\)", self.file)
         yearregex = re.compile("\(([1-2][90]\d\d)\)")
         try:
             self.pubyear = int(yearregex.findall(self.file)[-1])
@@ -79,7 +82,7 @@ class Comic:
             print("Unable to find year of publication")
 
     def set_thumbnail(self):
-        switch  = self.extension;
+        switch = self.extension;
         if switch in ("cbz", "zip"):
             self.set_thumbnail_from_zip()
         elif switch in ("cbr", "zip"):
