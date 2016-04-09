@@ -170,6 +170,15 @@ class Collection:
             else:
                 temp_Contains.append(item)
         # ToDo (Maybe): If series only contains one item, make it a comic object
+        # index = 0
+        # for item in temp_Contains:
+        #     if type(item) is Series and item.contains.size() == 1:
+        #         temp_Contains[index] = item.contains[0]
+        #         if not test:
+        #             # Move the file out of empty the collection;
+        #             pass
+        #     index += 1
+
         self.contains = temp_Contains
 
     def __str__(self):
