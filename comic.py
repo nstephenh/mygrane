@@ -32,13 +32,14 @@ class Comic:
         self.pubyear = 0
         self.title = ""
         self.issue = 0
+        self.isTPB = False
         self.set_info_from_name()
 
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
 
     def set_info_from_name(self):
-        yearregex = re.compile("[1-2][90]\d\d")
+        yearregex = re.compile("\(([1-2][90]\d\d)\)")
         try:
             self.pubyear = int(yearregex.findall(self.file)[-1])
             try:
@@ -55,16 +56,16 @@ class Comic:
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
                     try:
-                        issuestring = re.sub("[^0-9]", "", issuestring)
+                        issuestring = re.sub("[^0-9v]", "", issuestring)
                         self.issue = float(issuestring)
                     except Exception:
-                        #Comic has no filename
+                        # Comic has no issuenumber
                         self.title = coversplit
                         return
                 frontpart = coversplit
                 try:
                     longname = " ".join(frontpart.split()[:-1])
-                    if re.match("v\d", longname.split()[-1]):
+                    if re.match("v\d{1,2}", longname.split()[-1]):
                         self.title = " ".join(longname.split()[:-1])
                         print("its got a volume number")
                     else:
