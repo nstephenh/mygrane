@@ -99,7 +99,8 @@ class Collection:
                 index = 0
                 found = False
                 while index < len(temp_Contains):
-                    lastissue = temp_Contains[index].contains[-1]
+                    series = temp_Contains[index]
+                    lastissue = series.contains[-1]
                     # if the issue  we are looking at has a name close to the new comic
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
@@ -107,11 +108,33 @@ class Collection:
                     # print(item.title + '\t' + str(temp_Contains[index].name_close_enough(item.title)) + '\t'
                         # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
                         # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
-                    if temp_Contains[index].name_close_enough(item.title) \
-                            and (item.pubyear - lastissue.pubyear) in [0, 1] \
-                            and ((0 < item.issue - lastissue.issue) <= 1 \
-                                 or (0 <= item.issue - lastissue.issue) <= 1 \
-                                 and allow_duplicates):
+
+                    # Special handling for 0 issues. If the last issue was a 0 issue then
+                    # we check to see if the name is cloes enough
+                    # and the next issue is a #1
+                    # and the zero issue was published the year before at earliest
+                    if lastissue.issue == 0 and series.name_close_enough(item.title) \
+                            and (item.issue == 1) \
+                            and (item.pubyear - lastissue.pubyear >= -1):
+                        if not test:
+                            try:
+                                olditemdir = item.containing_directory + "/"
+                                item.title = series.name
+                                if series.pubyear != item.pubyear:
+                                    pass
+                                    # move the series folder
+                                    # series.pubyear = item.pubyear
+                                item.containing_directory += "/" + item.title + " (" + str(series.pubyear) + ")/"
+                                os.rename(olditemdir + item.file, item.containing_directory + item.file)
+                            except os.error as e:
+                                print("Error, comic already exists in directory or")
+                                print(e)
+                        series.contains.append(item)
+                        print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
+                        found = True
+
+                    elif temp_Contains[index].name_close_enough(item.title) \
+                            and (item.pubyear - lastissue.pubyear) in [0, 1]:
                         if not test:
                             try:
                                 olditemdir = item.containing_directory + "/"
@@ -132,7 +155,7 @@ class Collection:
                         try:
 
                             olditemdir = item.containing_directory + "/"
-                            createddir = "/" + item.title + " (" + str(item.pubyear) + ")"
+                            createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                             os.mkdir(olditemdir + createddir)
                             item.containing_directory += createddir + "/"
                             os.rename(olditemdir + item.file, item.containing_directory + item.file)
