@@ -111,7 +111,7 @@ class Collection:
                             and (item.issue - temp_Contains[index].contains[-1].issue) == 1:
                         if not test:
                             try:
-                                olditemdir = item.containing_directory
+                                olditemdir = item.containing_directory + "/"
                                 item.title = temp_Contains[index].name
                                 item.containing_directory += "/" + item.title + " (" + str(temp_Contains[index].pubyear) + ")/"
                                 os.rename(olditemdir + item.file, item.containing_directory + item.file)
@@ -128,7 +128,7 @@ class Collection:
                     if not test:
                         try:
 
-                            olditemdir = item.containing_directory
+                            olditemdir = item.containing_directory + "/"
                             createddir = "/" + item.title + " (" + str(item.pubyear) + ")"
                             os.mkdir(olditemdir + createddir)
                             item.containing_directory += createddir + "/"
