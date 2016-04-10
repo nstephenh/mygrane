@@ -47,19 +47,25 @@ class Comic:
         :param series: move the file to within this series
         :return: True if no errors thrown
         """
+        olditemdir = self.containing_directory + "/"
+        if series:
+            self.title = series.name
+            self.containing_directory = series.file + "/"
+        if dir_name:
+            self.containing_directory = dir_name
         try:
-            olditemdir = self.containing_directory + "/"
-            if series:
-                self.title = series.name
-                self.containing_directory = series.file + "/"
-            if dir_name:
-                self.containing_directory = dir_name
             os.rename(olditemdir + self.file, self.containing_directory + self.file)
             return True
         except os.error as e:
-            print("Error, comic already exists in directory or")
-            print(e)
-            return False
+            try:
+                os.mkdir(self.containing_directory)
+                os.rename(olditemdir + self.file, self.containing_directory + self.file)
+                return True
+            except os.error as f:
+                print("Error, comic already exists in directory or")
+                print(e)
+                return False
+
     def set_info_from_name(self):
         self.tags = re.findall("\((.^)\)", self.file)
         yearregex = re.compile("\(([1-2][90]\d\d)\)")

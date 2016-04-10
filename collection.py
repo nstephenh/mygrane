@@ -150,12 +150,9 @@ class Collection:
                     print("Created new series for " + item.title)
                     if not test:
                         try:
-
                             olditemdir = item.containing_directory + "/"
                             createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                            os.mkdir(olditemdir + createddir)
-                            item.containing_directory += createddir + "/"
-                            os.rename(olditemdir + item.file, item.containing_directory + item.file)
+                            item.move_file(olditemdir + createddir)
                             temp_Contains.append(Series(name=item.title,
                                                         location=item.containing_directory,  contents=[item]))
                         except os.error:
