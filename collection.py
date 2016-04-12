@@ -7,6 +7,7 @@ import re
 class Series:
     def __init__(self, location="", name="", contents=[]):
         self.name = name
+        self.title = name  # for compatability with comic objects
         self.issue = -1
         if contents != []:
             self.contains = contents
@@ -105,9 +106,10 @@ class Collection:
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
                     # then append the issue to the series
-                    # print(item.title + '\t' + str(temp_Contains[index].name_close_enough(item.title)) + '\t'
-                        # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
-                        # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
+                    # if series.name_close_enough(item.title):
+                        #print(item.title + '\t'
+                            # + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
+                            # + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
 
                     # Special handling for 0 issues. If the last issue was a 0 issue then
                     # we check to see if the name is cloes enough
@@ -134,13 +136,12 @@ class Collection:
                         found = True
 
                     elif temp_Contains[index].name_close_enough(item.title) \
-                            and (item.pubyear - lastissue.pubyear) in [0, 1]:
+                            and (item.pubyear - lastissue.pubyear) in [0, 1] \
+                            and ((0 < (item.issue - lastissue.issue) <= 1) \
+                                 or ((0 <= item.issue - lastissue.issue) <= 1 \
+                                 and allow_duplicates)):
                         if not test:
-                            try:
-                                item.move_file(series=temp_Contains[index])
-                            except os.error as e:
-                                print("Error, comic already exists in directory or")
-                                print(e)
+                            item.move_file(series=temp_Contains[index])
                         temp_Contains[index].contains.append(item)
                         print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                         found = True
@@ -174,6 +175,7 @@ class Collection:
         #     index += 1
 
         self.contains = temp_Contains
+        self.contains.sort(key=lambda x: x.title)
 
     def __str__(self):
         output = ""
