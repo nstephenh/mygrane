@@ -155,7 +155,7 @@ class Collection:
                             print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                             found = True
                             break
-                        index += 1
+                    index += 1
                 if not found:
                     # If there is no existing series, create a new one
                     print("Created new series for " + item.title)
