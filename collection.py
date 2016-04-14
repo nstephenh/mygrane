@@ -127,7 +127,7 @@ class Collection:
                                 item.title = series.name
                                 if series.pubyear != item.pubyear:
                                     pass
-                                    # move the series folder
+                                    # ToDo: move the series folder
                                     # series.pubyear = item.pubyear
                                 item.containing_directory += "/" + item.title + " (" + str(series.pubyear) + ")/"
                                 os.rename(olditemdir + item.file, item.containing_directory + item.file)
