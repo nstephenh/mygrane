@@ -72,6 +72,7 @@ class Series:
 class Collection:
     def __init__(self, location="", contains=[]):
         self.contains = []
+        self.location=location
         if location != "":
             print("Creating new collection")
             for item in sorted(os.listdir(location)):
@@ -88,6 +89,8 @@ class Collection:
                     print("Setting thumnail for " + item.file)
                     item.set_thumbnail()
                 self.contains.append(item)
+                if self.location == "" and type(item) is Series:
+                    self.location = self.contains[0].file
 
     def sort(self, test=True, allow_duplicates=False):
         # presort self.contains to go by issue number
@@ -164,15 +167,19 @@ class Collection:
 
             else:
                 temp_Contains.append(item)
-        # ToDo (Maybe): If series only contains one item, make it a comic object
-        # index = 0
-        # for item in temp_Contains:
-        #     if type(item) is Series and item.contains.size() == 1:
-        #         temp_Contains[index] = item.contains[0]
-        #         if not test:
-        #             # Move the file out of empty the collection;
-        #             pass
-        #     index += 1
+
+        # If series only contains one item, make it a comic object
+        index = 0
+        for item in temp_Contains:
+            if type(item) is Series and len(item.contains) == 1:
+
+                if not test:
+                    # Move the file out of empty the collection
+                    single = item.contains[0]
+                    print(single.containing_directory)
+                    single.move_file(self.location)
+                    temp_Contains[index] = single
+            index += 1
 
         self.contains = temp_Contains
         self.contains.sort(key=lambda x: x.title)

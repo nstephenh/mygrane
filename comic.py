@@ -55,6 +55,11 @@ class Comic:
             self.containing_directory = dir_name
         try:
             os.rename(olditemdir + self.file, self.containing_directory + self.file)
+            try:
+                os.rmdir(olditemdir)  # This is to remove empty directories
+                print("Removed empty directory for " + self.file)
+            except os.error as g:
+                pass
             return True
         except os.error as e:
             try:
