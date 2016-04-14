@@ -72,7 +72,7 @@ class Series:
 class Collection:
     def __init__(self, location="", contains=[]):
         self.contains = []
-        self.location=location
+        self.location = location + "/"
         if location != "":
             print("Creating new collection")
             for item in sorted(os.listdir(location)):
