@@ -141,7 +141,7 @@ class Collection:
                     elif temp_Contains[index].name_close_enough(item.title) \
                             and (item.pubyear - lastissue.pubyear) in [0, 1] \
                             and ((0 < (item.issue - lastissue.issue) <= 1) \
-                                 or ((0 <= item.issue - lastissue.issue) <= 1 \
+                                 or (0 <= (item.issue - lastissue.issue) <= 1 \
                                  and allow_duplicates)):
                         if not test:
                             item.move_file(series=temp_Contains[index])
