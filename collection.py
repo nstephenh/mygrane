@@ -89,12 +89,21 @@ class Collection:
                     self.location = self.contains[0].file
 
     def sort(self, test=True, allow_duplicates=False):
-        # presort self.contains to go by issue number
-        self.contains.sort(key=lambda x: x.issue)
+        temp_Contains = [] #This is what we will return
+        sortme= [] #This is what we use as a temporary container.
 
-        temp_Contains = []
-        # sort each comic into its own series
+        #The following handles comics with no issue number by skipping them for the sort
         for item in self.contains:
+            if item.issue == None:
+                temp_Contains.append(item)
+            else:
+                sortme.append(item)
+
+        # presort sort to go by issue number
+        sortme.sort(key=lambda x: x.issue)
+
+        # sort each comic into its own series
+        for item in sortme:
             if type(item) is Comic and not (item.issue is None):
                 index = 0
                 found = False
@@ -133,7 +142,7 @@ class Collection:
                         series.contains.append(item)
                         print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                         found = True
-
+                        break
                     elif temp_Contains[index].name_close_enough(item.title) \
                             and (item.pubyear - lastissue.pubyear) in [0, 1] \
                             and ((0 < (item.issue - lastissue.issue) <= 1) \
@@ -144,6 +153,7 @@ class Collection:
                         temp_Contains[index].contains.append(item)
                         print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                         found = True
+                        break
                     index += 1
                 if not found:
                     # If there is no existing series, create a new one
