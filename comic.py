@@ -32,7 +32,7 @@ class Comic:
         self.extension = (file.split(".")[-1])
         self.pubyear = 0
         self.title = ""
-        self.issue = 0
+        self.issue = None
         self.isTPB = False
         self.tags = []
         self.set_info_from_name()
