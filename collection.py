@@ -41,14 +41,8 @@ class Series:
     def name_close_enough(self, theirs):
         oursbase = self.name
         theirsbase = theirs
-        if self.name == theirs:
-            return True
-        oursbase = oursbase.lower()
-        theirsbase = theirsbase.lower()
-        if oursbase == theirsbase:
-            return True
-        oursbase = re.sub("[^0-9a-z]", "", oursbase)
-        theirsbase = re.sub("[^0-9a-z]", "", theirsbase)
+        oursbase = re.sub("[^0-9a-z]", "", oursbase.lower())
+        theirsbase = re.sub("[^0-9a-z]", "", theirsbase.lower())
         if oursbase == theirsbase:
             # If the only difference is special characters and whitespace, then they are probably the same
             return True
