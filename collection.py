@@ -3,6 +3,8 @@ import preferences
 from comic import Comic
 import re
 
+plaintext = re.compile("[^0-9a-z]")
+andpersand = re.compile('and', flags=re.IGNORECASE)
 
 class Series:
     def __init__(self, location="", name="", contents=[]):
@@ -41,13 +43,13 @@ class Series:
     def name_close_enough(self, theirs):
         oursbase = self.name
         theirsbase = theirs
-        oursbase = re.sub("[^0-9a-z]", "", oursbase.lower())
-        theirsbase = re.sub("[^0-9a-z]", "", theirsbase.lower())
+        oursbase = plaintext.sub("", oursbase.lower())
+        theirsbase = plaintext.sub("", theirsbase.lower())
         if oursbase == theirsbase:
             # If the only difference is special characters and whitespace, then they are probably the same
             return True
-        re.sub('and', "",  oursbase, flags=re.IGNORECASE)
-        re.sub('and', "",  theirsbase, flags=re.IGNORECASE)
+        oursbase = andpersand.sub("",  oursbase)
+        theirsbase = andpersand.sub("",  theirsbase)
         if oursbase == theirsbase:
             # same as above but with provisions for the word and (since it is sometimes replaced with ampersand)
             return True
@@ -93,7 +95,7 @@ class Collection:
         temp_Contains = []
         # sort each comic into its own series
         for item in self.contains:
-            if type(item) is Comic:
+            if type(item) is Comic and not (item.issue is None):
                 index = 0
                 found = False
                 while index < len(temp_Contains):
