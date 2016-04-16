@@ -5,7 +5,7 @@ walk = os.walk(".")
 for directory in walk:
     for filename in directory[2]:
         error = False
-        yearregex = re.compile("[1-2][90]\d\d")
+        yearregex = re.compile("([1-2][90]\d\d)")
         try:
             pubyear = int(yearregex.findall(filename)[-1])
             try:
