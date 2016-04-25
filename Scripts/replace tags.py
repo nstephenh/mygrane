@@ -6,12 +6,13 @@ for filename in walk:
     extension = filename.split(".")[-1]
     if extension == "cbz" or extension == "cbr":
         try:
-            newname = re.sub("ctc", "\(ctc\)", filename)
+            newname = re.sub(" ctc", "(ctc)", filename)
         except Exception:
             newname = filename
         try:
-            pgcount = re.search("\d[1-3]p", newname).group(1)
+            pgcount = re.match(" \d[1-3]p", newname).group(1)
             newname = re.sub(pgcount, "(" + pgcount + ")", newname)
+            print(Exception)
         except Exception:
             pass
 
