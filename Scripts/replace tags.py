@@ -2,7 +2,6 @@ import os
 import re
 walk = os.listdir(".")
 for filename in walk:
-    print(filename)
     extension = filename.split(".")[-1]
     if extension == "cbz" or extension == "cbr":
         try:
@@ -10,7 +9,7 @@ for filename in walk:
         except Exception:
             newname = filename
         try:
-            pgcount = re.match(" \d[1-3]p", newname).group(1)
+            pgcount = re.match(" \d{1,3}p", newname).group(1)
             newname = re.sub(pgcount, "(" + pgcount + ")", newname)
             print(Exception)
         except Exception:
