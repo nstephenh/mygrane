@@ -36,6 +36,8 @@ class Comic:
         self.isTPB = False
         self.tags = []
         self.set_info_from_name()
+        junk = self.title + str(self.issue) + str(self.pubyear) + self.containing_directory
+        self.ident = hash(junk)
 
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
@@ -113,13 +115,23 @@ class Comic:
             print("Unable to find year of publication")
 
     def set_thumbnail(self):
-        switch = self.extension;
-        if switch in ("cbz", "zip"):
-            self.set_thumbnail_from_zip()
-        elif switch in ("cbr", "zip"):
-            self.set_thumbnail_from_rar()
+        coverimageloc = datadir + "/" + str(self.ident) + ".cover"
+        if os.path.isfile(coverimageloc):
+            file = open(coverimageloc)
+            self.set_thumbnail_to_file(file.read())
+            # Look for a thumbnail file already made
         else:
-            pass
+            try:
+                switch = self.extension
+                if switch in ("cbz", "zip"):
+                    self.set_thumbnail_from_zip()
+                elif switch in ("cbr", "zip"):
+                    self.set_thumbnail_from_rar()
+                    self.thumbnail.savev(coverimageloc, 'png', [None], [None])
+            except AttributeError:
+                print("That ain't a comic!")
+
+
 
     def set_thumbnail_from_zip(self):
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)

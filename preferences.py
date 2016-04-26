@@ -4,6 +4,8 @@ cover_width = 300
 
 library_directory = "/home/nsh/Documents/Comics/Test/"
 
+datadir = "/home/nsh/.mygrane/"
+
 viewers = ["evince"]
 current_viewer = ""
 

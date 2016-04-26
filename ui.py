@@ -110,6 +110,10 @@ class LibraryManager(Gtk.Window):
         print(file_to_open)
 
 
+try:
+    os.mkdir(datadir)
+except FileExistsError:
+    pass
 mainWindow = LibraryManager()
 mainWindow.connect("delete-event", Gtk.main_quit)
 Gtk.main()
