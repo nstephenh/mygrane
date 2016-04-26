@@ -9,7 +9,7 @@ from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 from preferences import *
 
 import re
-
+import hashlib
 
 class Comic:
     """
@@ -37,7 +37,7 @@ class Comic:
         self.tags = []
         self.set_info_from_name()
         junk = self.title + str(self.issue) + str(self.pubyear) + self.containing_directory
-        self.ident = hash(junk)
+        self.ident = hashlib.md5(junk.encode()).hexdigest()
 
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
@@ -117,8 +117,10 @@ class Comic:
     def set_thumbnail(self):
         coverimageloc = datadir + "/" + str(self.ident) + ".cover"
         if os.path.isfile(coverimageloc):
-            file = open(coverimageloc)
-            self.set_thumbnail_to_file(file.read())
+            try:
+                self.thumbnail = Pixbuf.new_from_file(coverimageloc)
+            except Exception:
+                pass
             # Look for a thumbnail file already made
         else:
             try:
@@ -132,7 +134,6 @@ class Comic:
                 print("That ain't a comic!")
 
 
-
     def set_thumbnail_from_zip(self):
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)
         for file_in_zip in zf.namelist()[:2]:
@@ -140,7 +141,7 @@ class Comic:
                 #print("Found image: ", file_in_zip, " -- ")
                 cover = zf.read(file_in_zip)
                 zf.close()
-                return self.set_thumbnail_to_file(cover)
+                return self.set_thumbnail_to_image(cover)
             else:
                 pass
                 #print("First image not an image: " + file_in_zip)
@@ -152,13 +153,13 @@ class Comic:
             if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
                 #print("Found image: ", file_in_rar, " -- ")
                 cover = rf.read(file_in_rar)
-                return self.set_thumbnail_to_file(cover)
+                return self.set_thumbnail_to_image(cover)
             else:
                 pass
                 #print("First image not an image: " + file_in_rar)
         return False
 
-    def set_thumbnail_to_file(self, image_to_use):
+    def set_thumbnail_to_image(self, image_to_use):
         try:
             loader = PixbufLoader()
             loader.write(image_to_use)
