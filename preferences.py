@@ -10,4 +10,4 @@ datadir = "/home/nsh/.mygrane/"
 viewers = ["evince"]
 current_viewer = ""
 
-preload_cover_images = False
+preload_cover_images = True
