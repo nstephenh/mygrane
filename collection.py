@@ -11,6 +11,8 @@ class Series:
         self.name = name
         self.title = name  # for compatability with comic objects
         self.issue = -1
+        self.contains = []
+        #print(contents) # debug line
         if contents != []:
             self.contains = contents
             self.file = self.contains[0].containing_directory
@@ -20,13 +22,16 @@ class Series:
             for file in sorted(os.listdir(location)):
                 print(file)
                 extension = (file.split(".")[-1])
-                if extension in ["cbr", "cbz", "rar", "zip"]:
+                if extension.lower() in ["cbr", "cbz", "rar", "zip"]:
                     issue = Comic(location, file)
                     if preferences.preload_cover_images:
                         issue.set_thumbnail()
                     self.contains.append(issue)
             self.file = location
+        #print(self.file) #Debug line
         if name == "":
+            #print(self.file)
+            #print(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
         self.thumbnail = None
@@ -73,6 +78,7 @@ class Collection:
             print("Creating new collection")
             for item in sorted(os.listdir(location)):
                 if os.path.isdir(location + "/" + item):
+                    #print(item)
                     self.contains.append(Series(location + "/" + item))
                 else:
                     print("Adding " + item + " To collection")

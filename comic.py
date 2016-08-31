@@ -29,7 +29,7 @@ class Comic:
         self.thumbnail = None
         self.containing_directory = containing_directory
         self.file = file
-        self.extension = (file.split(".")[-1])
+        self.extension = (file.split(".")[-1].lower)
         self.pubyear = 0
         self.title = ""
         self.issue = None
