@@ -10,6 +10,7 @@ from preferences import *
 
 import re
 import hashlib
+import shutil
 
 class Comic:
     """
@@ -56,7 +57,7 @@ class Comic:
         if dir_name:
             self.containing_directory = dir_name
         try:
-            os.rename(olditemdir + self.file, self.containing_directory + self.file)
+            shutil.move(olditemdir + self.file, self.containing_directory + self.file)
             try:
                 os.rmdir(olditemdir)  # This is to remove empty directories
                 print("Removed empty directory for " + self.file)
@@ -66,7 +67,7 @@ class Comic:
         except os.error as e:
             try:
                 os.mkdir(self.containing_directory)
-                os.rename(olditemdir + self.file, self.containing_directory + self.file)
+                shutil.move(olditemdir + self.file, self.containing_directory + self.file)
                 return True
             except os.error as f:
                 print("Error, comic already exists in directory or")
