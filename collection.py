@@ -2,7 +2,7 @@ import os
 import preferences
 from comic import Comic
 import re
-import shutil
+import nshutil
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
@@ -143,7 +143,7 @@ class Collection:
                                         # ToDo: move the series folder
                                         # series.pubyear = item.pubyear
                                     item.containing_directory += "/" + item.title + " (" + str(series.pubyear) + ")/"
-                                    shutil.move(olditemdir + item.file, item.containing_directory + item.file)
+                                    nshutil.move(olditemdir + item.file, item.containing_directory + item.file)
                                 except os.error as e:
                                     print("Error, comic already exists in directory or")
                                     print(e)
