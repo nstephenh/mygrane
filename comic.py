@@ -57,7 +57,7 @@ class Comic:
         if dir_name:
             self.containing_directory = dir_name
         try:
-            os.system(olditemdir + self.file, self.containing_directory + self.file)
+            nshutil.move(olditemdir + self.file, self.containing_directory + self.file)
             try:
                 os.rmdir(olditemdir)  # This is to remove empty directories
                 print("Removed empty directory for " + self.file)
