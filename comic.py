@@ -93,15 +93,23 @@ class Comic:
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
                     try:
-                        issuestring = re.sub("[^0-9v]", "", issuestring)
+                        issuestring = re.sub("[^0-9]", "", issuestring)
                         self.issue = float(issuestring)
                     except Exception:
                         # Comic has no issuenumber
                         self.title = coversplit
                         return
                 frontpart = coversplit
+
+                #throw out volume numbers
+                try:
+                    frontpart = re.sub(" v\d{1,2} ", " ", frontpart)
+                except Exception:
+                    pass
+
                 try:
                     longname = " ".join(frontpart.split()[:-1])
+                    #left this in in case its important
                     if re.match("v\d{1,2}", longname.split()[-1]):
                         self.title = " ".join(longname.split()[:-1])
                         print("its got a volume number")
