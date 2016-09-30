@@ -64,12 +64,12 @@ class Comic:
             except os.error as g:
                 pass
             return True
-        except os.error as e:
+        except OSError as e:
             try:
                 os.mkdir(self.containing_directory)
                 nshutil.move(olditemdir + self.file, self.containing_directory + self.file)
                 return True
-            except os.error as f:
+            except OSError as f:
                 print("Error, comic already exists in directory or")
                 print(e)
                 return False
