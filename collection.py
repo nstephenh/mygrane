@@ -2,7 +2,7 @@ import os
 import preferences
 from comic import Comic
 import re
-import nshutil
+import shutil
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
@@ -23,7 +23,7 @@ class Series:
             for file in sorted(os.listdir(location)):
                 print(file)
                 extension = (file.split(".")[-1])
-                if extension.lower() in ["cbr", "cbz", "rar", "zip"]:
+                if extension.lower() in ["cbr", "cbz", "rar", "zip", "pdf"]:
                     issue = Comic(location, file)
                     if preferences.preload_cover_images:
                         issue.set_thumbnail()
@@ -32,7 +32,7 @@ class Series:
         #print(self.file) #Debug line
         if name == "":
             #print(self.file)
-            #print(self.contains)
+            print(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
         self.thumbnail = None
@@ -143,7 +143,7 @@ class Collection:
                                         # ToDo: move the series folder
                                         # series.pubyear = item.pubyear
                                     item.containing_directory += "/" + item.title + " (" + str(series.pubyear) + ")/"
-                                    nshutil.move(olditemdir + item.file, item.containing_directory + item.file)
+                                    shutil.move(olditemdir + item.file, item.containing_directory + item.file)
                                 except os.error as e:
                                     print("Error, comic already exists in directory or")
                                     print(e)
