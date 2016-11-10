@@ -4,14 +4,20 @@ The current most useful feature is as a program to sort a directory of comics.
 
 #Comic Naming Convention
 Mygrane uses the names of comics to extract information about them, and will produce unexpected results if not named in this manner:
-'''
+
+```
 Title issuenumber (pubyear) (othertags).extension
-'''
+```
+
 Title - all text preceding the issuenumber.
+
 issuenumber - The group of digits preceding the first parenthesis. Note that floats are supported.
+
 pubyear - The year of publication of the comic, automatically determined by the last string in the filename matching
         the regex "\(([1-2][90]\d\d)\)"
+
 othertags - Any number of strings that are enclosed in parenthesis in the filename.
+
 extension - cbz, cbr, or pdf.
 
 
