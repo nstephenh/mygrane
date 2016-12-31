@@ -31,6 +31,7 @@ class Comic:
         self.containing_directory = containing_directory
         self.file = file
         self.extension = (file.split(".")[-1].lower)
+        self.size = os.path.getsize(containing_directory + "/" + file)
         self.pubyear = 0
         self.title = ""
         self.issue = None

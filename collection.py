@@ -95,7 +95,13 @@ class Collection:
                 if self.location == "" and type(item) is Series:
                     self.location = self.contains[0].file
 
-    def sort(self, test=True, allow_duplicates=False):
+    def sort(self, test=True, allow_duplicates="False"):
+        """
+
+        :param test:
+        :param allow_duplicates: "true" "false" or "delete". Delete will keep the copy with the highest filesize
+        :return:
+        """
         temp_Contains = [] #This is what we will return
         sortme= [] #This is what we use as a temporary container.
 
@@ -151,16 +157,49 @@ class Collection:
                             print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
                             found = True
                             break
+                        # if the file name is close enough, and the comic was published in the same or next year,
+                        # and the issue number is within 1 or the issue number and publication year is the same and
+                        # allow_duplicates is not "false"
                         elif temp_Contains[index].name_close_enough(item.title) \
                                 and (item.pubyear - lastissue.pubyear) in [0, 1] \
                                 and ((0 < (item.issue - lastissue.issue) <= 1) \
-                                     or (0 <= (item.issue - lastissue.issue) <= 1 \
-                                     and allow_duplicates and (item.pubyear- lastissue.pubyear == 0))):
-                            if not test:
-                                item.move_file(series=temp_Contains[index])
-                            temp_Contains[index].contains.append(item)
-                            print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[index].name)
+                                     or (0 == (item.issue - lastissue.issue) \
+                                     and (str.lower(allow_duplicates) != "false") and (item.pubyear - lastissue.pubyear == 0))):
+                            # if the file is a duplicate:
+                            if str.lower(allow_duplicates) == 'delete' and ((0 ==(item.issue - lastissue.issue) \
+                                    and (item.pubyear - lastissue.pubyear == 0))):
+                                # and the last issue is larger or the same size
+                                if lastissue.size >= item.size:
+                                    if not test:
+                                        # delete the file
+                                        os.remove(item.containing_directory + "/" + item.file)
+                                    # And since we're not appending it to anything it will be thrown out with sortme
+                                # if the lastissue was smaller:
+                                else:
+                                    if not test:
+                                        # delete the last issue
+                                        os.remove(lastissue.containing_directory + "/" + lastissue.file)
+                                        print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
+                                        # and move the file as one would normally
+                                        item.move_file(series=temp_Contains[index])
+                                    # and append it to the collection
+                                    temp_Contains[index].contains.append(item)
+                                    print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                                        index].name)
+                                pass
+                            # if the last file was not a duplicate
+                            else:
+                                if not test:
+                                    # move the file
+                                    item.move_file(series=temp_Contains[index])
+                                # and append it to the collection
+                                temp_Contains[index].contains.append(item)
+                                print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                                    index].name)
+                            # regardless of whether or not it was a duplicate
+                            # setting found to true will let the next piece of code know not to create a new folder
                             found = True
+                            # stop the loop
                             break
                     index += 1
                 if not found:
