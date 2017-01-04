@@ -34,7 +34,8 @@ from collection import Collection
 
 location = "/the/path/to/your/collection"
 stuff = Collection(location)
-stuff.sort(test=False, allow_duplicates=True)
+stuff.sort(test=False, allow_duplicates="True") 
+#Change to allow_duplicates to "Delete" to delete duplicates (I'm not responsible if this deletes anything important)
 print(stuff)
 ```
 If you would like to run the program without moving any files, set test to True,
