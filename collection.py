@@ -213,6 +213,7 @@ class Collection:
                     print("Created new series for " + item.title)
                     if not test:
                         try:
+                            createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                             item.move_file(self.location + createddir)
                             temp_Contains.append(Series(name=item.title,
                                                         location=self.location,  contents=[item]))
