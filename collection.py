@@ -72,15 +72,21 @@ class Series:
 
 
 class Collection:
-    def __init__(self, location="", contains=[]):
+    def __init__(self, location="", contains=[], flatten=False):
         self.contains = []
         self.location = location + "/"
         if location != "":
             print("Creating new collection")
             for item in sorted(os.listdir(location)):
-                if os.path.isdir(location + "/" + item):
+                sublocation = location + "/" + item
+                if os.path.isdir(sublocation):
                     #print(item)
-                    self.contains.append(Series(location + "/" + item))
+                    if flatten==False:
+                        self.contains.append(Series(sublocation))
+                    else:
+                        #If flatten is true then we want to cycle through each item
+                        for subitem in sorted(os.listdir(sublocation + "/")):
+                            self.contains.append(Comic(sublocation + "/", subitem))
                 else:
                     print("Adding " + item + " To collection")
                     newcomic = Comic(location, item)
@@ -211,7 +217,7 @@ class Collection:
                             createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                             item.move_file(olditemdir + createddir)
                             temp_Contains.append(Series(name=item.title,
-                                                        location=item.containing_directory,  contents=[item]))
+                                                        location=self.location,  contents=[item]))
                         except os.error:
                             print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                     else:
