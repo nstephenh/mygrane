@@ -57,6 +57,8 @@ class Comic:
             self.containing_directory = series.file + "/"
         if dir_name:
             self.containing_directory = dir_name
+        if (olditemdir == self.containing_directory):
+            return True
         try:
             shutil.move(olditemdir + self.file, self.containing_directory + self.file)
             try:
