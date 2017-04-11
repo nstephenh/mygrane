@@ -16,7 +16,7 @@ class Series:
         #print(contents) # debug line
         if contents != []:
             self.contains = contents
-            self.file = self.contains[0].containing_directory
+            self.file = self.contains[0].containing_directory #Should be absolute...
         else:
             self.contains = []
             print("Initializing " + location)
@@ -155,7 +155,7 @@ class Collection:
                                         # series.pubyear = item.pubyear
                                     newdir = self.location +"/" + item.title + " (" + str(series.pubyear) + ")/"
                                     item.move_file(newdir)
-                                    item.containing_directory = newdir
+                                    #item.containing_directory = newdir #move_file changes
                                 except os.error as e:
                                     print("Error, comic already exists in directory or")
                                     print(e)
@@ -189,7 +189,7 @@ class Collection:
                                         os.remove(lastissue.containing_directory + "/" + lastissue.file)
                                         print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
                                         # and move the file as one would normally
-                                        item.move_file(self.location + temp_Contains[index].file)
+                                        item.move_file(temp_Contains[index].file)
                                     # and append it to the collection
                                     temp_Contains[index].contains.append(item)
                                     print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
@@ -199,7 +199,7 @@ class Collection:
                             else:
                                 if not test:
                                     # move the file
-                                    item.move_file(self.location + temp_Contains[index].file)
+                                    item.move_file(temp_Contains[index].file)
                                 # and append it to the collection
                                 temp_Contains[index].contains.append(item)
                                 print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
