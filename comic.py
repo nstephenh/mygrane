@@ -44,23 +44,28 @@ class Comic:
     def __str__(self):
         return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
 
-    def move_file(self, dir_name=None, series=None):
+    def move_file(self, dir_name=None):
         """
 
-        :param dir_name: moves the file to this directory (asbsolute path)
-        :param series: move the file to within this series
+        :param dir_name: moves the file to this directory (absolute path)
+
         :return: True if no errors thrown
+        a previous "series" parameter has been removed as it was not absolute
         """
         olditemdir = self.containing_directory + "/"
-        if series:
-            self.title = series.name
-            self.containing_directory = series.file + "/"
+        #if series:
+            #self.title = series.name
+            #self.containing_directory = series.file + "/"
         if dir_name:
             self.containing_directory = dir_name
         if (olditemdir == self.containing_directory):
             return True
+        print("Trying to move " + self.containing_directory+self.file + " to " + dir_name)
+        #print(olditemdir)
+        #print(self.containing_directory)
+
         try:
-            shutil.move(olditemdir + self.file, self.containing_directory + self.file)
+            shutil.move(olditemdir +"/"+ self.file, self.containing_directory +"/"+ self.file)
             try:
                 os.rmdir(olditemdir)  # This is to remove empty directories
                 print("Removed empty directory for " + self.file)
@@ -70,7 +75,12 @@ class Comic:
         except OSError as e:
             try:
                 os.mkdir(self.containing_directory)
-                shutil.move(olditemdir + self.file, self.containing_directory + self.file)
+            except OSError as h:
+                print("Error, directory already exists or")
+                print(h)
+            try:
+
+                shutil.move(olditemdir +"/"+ self.file, self.containing_directory +"/"+ self.file)
                 return True
             except OSError as f:
                 print("Error, comic already exists in directory or")

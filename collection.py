@@ -148,14 +148,13 @@ class Collection:
                                 and (item.pubyear - lastissue.pubyear >= -1):
                             if not test:
                                 try:
-                                    olditemdir = item.containing_directory + "/"
                                     item.title = series.name
                                     if series.pubyear != item.pubyear:
                                         pass
                                         # ToDo: move the series folder
                                         # series.pubyear = item.pubyear
-                                    item.containing_directory += "/" + item.title + " (" + str(series.pubyear) + ")/"
-                                    shutil.move(olditemdir + item.file, item.containing_directory + item.file)
+                                    item.containing_directory = self.location +"/" + item.title + " (" + str(series.pubyear) + ")/"
+                                    item.move_file(item.containing_directory)
                                 except os.error as e:
                                     print("Error, comic already exists in directory or")
                                     print(e)
@@ -184,10 +183,12 @@ class Collection:
                                 else:
                                     if not test:
                                         # delete the last issue
+                                        #print(lastissue.containing_directory)
+                                        #print(lastissue.file)
                                         os.remove(lastissue.containing_directory + "/" + lastissue.file)
                                         print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
                                         # and move the file as one would normally
-                                        item.move_file(series=temp_Contains[index])
+                                        item.move_file(self.location + temp_Contains[index].file)
                                     # and append it to the collection
                                     temp_Contains[index].contains.append(item)
                                     print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
@@ -197,7 +198,7 @@ class Collection:
                             else:
                                 if not test:
                                     # move the file
-                                    item.move_file(series=temp_Contains[index])
+                                    item.move_file(self.location + temp_Contains[index].file)
                                 # and append it to the collection
                                 temp_Contains[index].contains.append(item)
                                 print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
