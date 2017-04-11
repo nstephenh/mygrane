@@ -1,10 +1,10 @@
 import os
 import zipfile
 from unrar import rarfile
-import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('GdkPixbuf', '2.0')
-from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
+#import gi
+#gi.require_version('Gtk', '3.0')
+#gi.require_version('GdkPixbuf', '2.0')
+#from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
 from preferences import *
 
@@ -107,6 +107,7 @@ class Comic:
                 #throw out volume numbers
                 try:
                     frontpart = re.sub(" v\d{1,2} ", " ", frontpart)
+                    frontpart = re.sub(" Vol\d{1,2} ", " ", frontpart)
                 except Exception:
                     pass
 
