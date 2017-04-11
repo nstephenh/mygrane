@@ -60,7 +60,7 @@ class Comic:
             self.containing_directory = dir_name
         if (olditemdir == self.containing_directory):
             return True
-        print("Trying to move " + self.containing_directory+self.file + " to " + dir_name)
+        print("Moving " + olditemdir+self.file + " to " + dir_name)
         #print(olditemdir)
         #print(self.containing_directory)
 

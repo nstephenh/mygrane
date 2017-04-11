@@ -153,8 +153,9 @@ class Collection:
                                         pass
                                         # ToDo: move the series folder
                                         # series.pubyear = item.pubyear
-                                    item.containing_directory = self.location +"/" + item.title + " (" + str(series.pubyear) + ")/"
-                                    item.move_file(item.containing_directory)
+                                    newdir = self.location +"/" + item.title + " (" + str(series.pubyear) + ")/"
+                                    item.move_file(newdir)
+                                    item.containing_directory = newdir
                                 except os.error as e:
                                     print("Error, comic already exists in directory or")
                                     print(e)
