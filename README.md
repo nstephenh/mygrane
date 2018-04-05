@@ -2,7 +2,7 @@
 My Graphic Art Novel e-libary, or MyGrANe (pronounced migraine), is a python comic manager.
 The current most useful feature is as a program to sort a directory of comics.
 
-#Comic Naming Convention
+# Comic Naming Convention
 Mygrane uses the names of comics to extract information about them, and will produce unexpected results if not named in this manner:
 
 ```
@@ -21,9 +21,9 @@ othertags - Any number of strings that are enclosed in parenthesis in the filena
 extension - cbz, cbr, or pdf.
 
 
-#Uses
+# Uses
 
-##As a program to sort your comic library
+## As a program to sort your comic library
 By writing a simple script, we can sort a collection of comics that use our naming convention.
 location should be the path to your collection (absolute).
 Your collection should be a directory of only comic files for the first run.
@@ -41,7 +41,7 @@ print(stuff)
 If you would like to run the program without moving any files, set test to True,
 and then pipe the results of the script to a program such as less or more.
 
-###How the sorting algorithm works
+### How the sorting algorithm works
 First, the program seperates all current objects between comics and series.
 All the series objects are added to the new collection, while comics are added to a temporary collection for sorting.
 The new collection is sorted by issue number.
@@ -54,11 +54,11 @@ If either criteria isn't met, then a new series is made for the issue in questio
 Make sure all files you are sorting follow the naming convention
 
 
-##As a graphical library
+## As a graphical library
 Note: There hasn't been much development on this front, and as such it is not garunteed to work
 ![Image](/docs/Library%20Manager.png?raw=true "The Library")
 
-##As a framework
+## As a framework
 By importing mygrane as a dependency for your project, you can use the comic and collection objects in your own project.
 
 #Dependencies
