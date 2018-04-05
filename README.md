@@ -61,5 +61,5 @@ Note: There hasn't been much development on this front, and as such it is not ga
 ## As a framework
 By importing mygrane as a dependency for your project, you can use the comic and collection objects in your own project.
 
-#Dependencies
+# Dependencies
 Unrar. I've tried to include a compiled binary.
