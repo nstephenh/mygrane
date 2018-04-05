@@ -1,8 +1,7 @@
 import os
-import preferences
-from comic import Comic
+from mygrane import preferences
+from mygrane.comic import Comic
 import re
-import shutil
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)

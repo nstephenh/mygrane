@@ -6,7 +6,7 @@ from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
 import zipfile
 
-from comic import Comic
+from mygrane.comic import Comic
 
 
 

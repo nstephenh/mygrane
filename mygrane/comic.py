@@ -6,11 +6,11 @@ from unrar import rarfile
 #gi.require_version('GdkPixbuf', '2.0')
 #from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
-from preferences import *
+from mygrane.preferences import *
 
 import re
-import hashlib
 import shutil
+
 
 class Comic:
     """

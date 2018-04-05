@@ -4,9 +4,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 
-from collection import Series, Collection
-from comic import Comic
-from preferences import *
+from mygrane.collection import Series, Collection
+from mygrane.comic import Comic
+from mygrane.preferences import *
 from subprocess import call
 
 global stuff
@@ -20,7 +20,7 @@ dastack = Gtk.Stack()
 dastack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 dastack.set_transition_duration(1000)
 
-import preferences
+from mygrane import preferences
 
 window_width = preferences.window_width
 preview_width = preferences.cover_width
