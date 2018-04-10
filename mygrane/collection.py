@@ -94,8 +94,7 @@ class Collection:
                         # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
-                        sublocation.encode('UTF-8', 'replace')
-                        print("Error adding item: " + sublocation)
+                        print("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
 
         else:
             for item in contains:
