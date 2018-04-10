@@ -87,10 +87,15 @@ class Collection:
                         for subitem in sorted(os.listdir(sublocation + "/")):
                             self.contains.append(Comic(sublocation + "/", subitem))
                 else:
-                    print("Adding " + item + " To collection")
-                    newcomic = Comic(location, item)
-                    #newcomic.set_thumbnail()
-                    self.contains.append(newcomic)
+                    try:
+                        item.encode("UTF-8")
+                        print("Adding " + item + " To collection")
+                        newcomic = Comic(location, item)
+                        # newcomic.set_thumbnail()
+                        self.contains.append(newcomic)
+                    except UnicodeDecodeError as ude:
+                        print("Error adding item: " + str(item).encode('UTF-8', 'replace'))
+
         else:
             for item in contains:
                 if not preferences.preload_cover_images:
