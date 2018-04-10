@@ -46,9 +46,15 @@ def main():
                     if Library is None:
                         raise Exception("No Library provided")
                     print(Library)
-            except Exception:
-                print(type(Exception))
-                print(Exception)
+                elif cmd in ["sort"]:
+                    if Library is None:
+                        raise Exception("No Library provided")
+                    try:
+                        Library.sort(test=False,allow_duplicates="Delete")
+                    except Exception as detail:
+                        print(detail)
+            except Exception as detail:
+                print(detail)
 
 
 

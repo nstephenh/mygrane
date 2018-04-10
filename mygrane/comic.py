@@ -34,15 +34,16 @@ class Comic:
         self.size = os.path.getsize(containing_directory + "/" + file)
         self.pubyear = 0
         self.title = ""
-        self.issue = None
+        self.issueStr = None  # string
+        self.issueNum = None  # float
         self.isTPB = False
         self.tags = []
         self.set_info_from_name()
-        junk = self.title + str(self.issue) + str(self.pubyear) + self.containing_directory.split('/')[-1]
+        junk = self.title + str(self.issueNum) + str(self.pubyear) + self.containing_directory.split('/')[-1]
         #self.ident = hashlib.md5(junk.encode()).hexdigest()
 
     def __str__(self):
-        return self.title + " " + str(self.issue) + " (" + str(self.pubyear) + ")"
+        return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
 
     def move_file(self, dir_name=None):
         """
@@ -99,17 +100,21 @@ class Comic:
                     coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
                 except Exception:
                     print("Not using alt covers")
+                    coversplit = frontpart
 
-                issuestring = coversplit.split()[-1]
+                self.issueStr = re.sub("#", "", coversplit.split()[-1])  # Grab last substring before issue name
+                # and remove "#"
+
                 try:
-                    self.issue = float(issuestring)  # Using floats adds supports for .1 issues, etc
+                    self.issueNum = float(self.issueStr)  # Using floats adds supports for .1 issues, etc
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
                     try:
-                        issuestring = re.sub("[^0-9]", "", issuestring)
-                        self.issue = float(issuestring)
+                        issuestring = re.sub("[^.0-9]", "", self.issueStr)
+                        self.issueNum = float(self.issueStr)
                     except Exception:
                         # Comic has no issuenumber
+                        # And is therefore probably a Trade Paperback
                         self.title = coversplit
                         return
                 frontpart = coversplit
