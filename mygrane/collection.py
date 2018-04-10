@@ -93,7 +93,7 @@ class Collection:
                         newcomic = Comic(location, item)
                         # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
-                    except UnicodeDecodeError as ude:
+                    except UnicodeEncodeError as ude:
                         print("Error adding item: " + str(item).encode('UTF-8', 'replace'))
 
         else:
