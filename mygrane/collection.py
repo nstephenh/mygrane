@@ -181,7 +181,7 @@ class Collection:
                                     item.move_file(temp_Contains[index].file)
                                 # and append it to the collection
                                 temp_Contains[index].contains.append(item)
-                                print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                                print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
                                     index].name)
                             pass
                         # if the last file was not a duplicate
@@ -192,7 +192,7 @@ class Collection:
                                 item.move_file(temp_Contains[index].file)
                             # and append it to the collection
                             temp_Contains[index].contains.append(item)
-                            print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                            print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
                                 index].name)
                         # regardless of whether or not it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
@@ -258,7 +258,7 @@ class Collection:
                                     item.move_file(temp_Contains[index].file)
                                 # and append it to the collection
                                 temp_Contains[index].contains.append(item)
-                                print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                                print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
                                     index].name)
                             pass
                         # if the last file was not a duplicate
@@ -268,7 +268,7 @@ class Collection:
                                 item.move_file(temp_Contains[index].file)
                             # and append it to the collection
                             temp_Contains[index].contains.append(item)
-                            print("Added " + item.title + " " + str(item.issue) + " to " + temp_Contains[
+                            print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
                                 index].name)
                         # regardless of whether or not it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
