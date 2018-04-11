@@ -53,6 +53,9 @@ def main():
                         Library.sort(test=False,allow_duplicates="Delete")
                     except Exception as detail:
                         print(detail)
+                elif cmd in ["exit", "quit", "q"]:
+                    print("Goodbye")
+                    quit()
             except Exception as detail:
                 print(detail)
 
