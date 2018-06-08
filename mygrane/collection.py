@@ -6,6 +6,8 @@ import re
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
 
+thereplace = re.compile('the', flags=re.IGNORECASE)
+
 class Series:
     def __init__(self, location="", name="", contents=[]):
         self.name = name
@@ -51,10 +53,12 @@ class Series:
         oursbase = plaintext.sub("", oursbase.lower())
         theirsbase = plaintext.sub("", theirsbase.lower())
         if oursbase == theirsbase:
-            # If the only difference is special characters and whitespace, then they are probably the same
+            # If the only diference is special characters and whitespace, then they are probably the same
             return True
         oursbase = andpersand.sub("",  oursbase)
         theirsbase = andpersand.sub("",  theirsbase)
+        theirsbase = thereplace.sub("",  theirsbase)
+        oursbase = thereplace.sub("", oursbase)
         if oursbase == theirsbase:
             # same as above but with provisions for the word and (since it is sometimes replaced with ampersand)
             return True
