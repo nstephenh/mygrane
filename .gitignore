@@ -6,3 +6,4 @@ config/
 *.txt
 test.py
 *.pyc
+venv/

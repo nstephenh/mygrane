@@ -39,8 +39,7 @@ class Comic:
         self.isTPB = False
         self.tags = []
         self.set_info_from_name()
-        junk = self.title + str(self.issueNum) + str(self.pubyear) + self.containing_directory.split('/')[-1]
-        #self.ident = hashlib.md5(junk.encode()).hexdigest()
+
 
     def __str__(self):
         return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
@@ -202,3 +201,6 @@ class Comic:
         except Exception:
             print(Exception)
             return False
+
+    def add_to_db(self, dbcursor):
+        dbcursor.execute('ADD ')

@@ -2,6 +2,7 @@ import os
 from mygrane import preferences
 from mygrane.comic import Comic
 import re
+import sqlite3
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
@@ -71,9 +72,22 @@ class Series:
 
 
 class Collection:
-    def __init__(self, location="", contains=[], flatten=False):
+    def __init__(self, location="", dbfile = None, contains=[], flatten=False):
         self.contains = []
         self.location = location + "/"
+        self.dbfile = dbfile
+
+        if not (dbfile is None):
+            try:
+                self.conn = sqlite3.connect(dbfile)
+
+                self.nodb = False
+            except Exception:
+
+                print("Unable to access dbfile at %s", dbfile)
+                self.nodb = True
+        else:
+            self.nodb = True
         if location != "":
             print("Creating new collection")
             for item in sorted(os.listdir(location)):

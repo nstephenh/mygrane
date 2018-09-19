@@ -2,6 +2,10 @@
 import argparse
 import mygrane
 import mygrane.collection
+#import mygrane.webserve
+
+import _thread
+#import tornado
 
 Library = None
 
@@ -16,6 +20,8 @@ def main():
         args = parser.parse_args()
         #libLoc = args[0]
         libLoc = "/home/nsh/Documents/Comics To Read/All of Marvel"
+
+        #_thread.start_new_thread(mygrane.webserve.start_webserve(), ())
 
         # Run a loop of asking for commands and running them.
         end = False
