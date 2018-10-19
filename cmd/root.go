@@ -3,27 +3,31 @@ package cmd
 import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
+	"github.com/nstephenh/mygrane/Mygrane"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "mygrane",
-	Short: "mygrane is a comics manager",
-	Long: `mygrane is a comics manager. https://github.com/nstephenh/mygrane`,
+	Use:   "Mygrane",
+	Short: "Mygrane is a comics manager",
+	Long: `Mygrane is a comics manager. https://github.com/nstephenh/Mygrane`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Please specify a command: init, ls, import, help")
+		fmt.Println("Please specify a command: ls, import, help")
 	},
 }
 
-var cfgFile = "$HOME/.mygrane"
-
+var cfgFile = "$HOME/.Mygrane"
+var dbFile = "$HOME/.Mygrane.db"
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mygrane.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+		"config file (default is $HOME/.Mygrane.yaml)")
 	rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+	rootCmd.PersistentFlags().StringVar(&dbFile, "db", "",
+		"database file (default is $HOME/.Mygrane.db")
 }
 
 func initConfig() {
@@ -47,18 +51,19 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".mygrane")
+		viper.SetConfigName(".Mygrane")
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		//if there's no config create a new one
 		fmt.Println("Can't read config:", err)
-		fmt.Println("Creating new config file")
-		if _, err := os.Create(home + "/.mygrane.yaml"); err != nil {
+		fmt.Println("Creating new config file at " + home + "/.Mygrane")
+		if _, err := os.Create(home + "/.Mygrane"); err != nil {
 			fmt.Println("Can't write default config:", err)
 			os.Exit(1)
 		}
 	}
+	Mygrane.Init_DB(dbFile)
 }
 
 func Execute() {
