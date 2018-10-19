@@ -57,8 +57,8 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		//if there's no config create a new one
 		fmt.Println("Can't read config:", err)
-		fmt.Println("Creating new config file at " + home + "/.Mygrane")
-		if _, err := os.Create(home + "/.Mygrane"); err != nil {
+		fmt.Println("Creating new config file at " + home + "/.Mygrane.yaml")
+		if _, err := os.Create(home + "/.Mygrane.yaml"); err != nil {
 			fmt.Println("Can't write default config:", err)
 			os.Exit(1)
 		}
