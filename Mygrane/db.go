@@ -28,23 +28,32 @@ func Init_DB(dblocation string) {
 	Files - Stores the individual instances of files, each cbz etc
 	 */
 
-	statement, err := database.Prepare(`CREATE TABLE IF NOT EXISTS COMICS(
+	statement, _ := database.Prepare(`CREATE TABLE IF NOT EXISTS Comics(
 		id INTEGER PRIMARY KEY, title TEXT);
 
 `)
-	fmt.Println(err)
 	statement.Exec()
-	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS COLLECTIONS(
+	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Collections(
 		id INTEGER PRIMARY KEY, title TEXT);
 `)
 	statement.Exec()
 
-	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS FILES(
-		id INTEGER PRIMARY KEY, path TEXT, hash TEXT);
+	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Files(
+		id INTEGER PRIMARY KEY, path TEXT, hash TEXT, releaseGroup TEXT);
 `)
 	statement.Exec()
+
+	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS rel_Collection_Comic(
+		id INTEGER PRIMARY KEY, collectionID INTEGER , comicID INTEGER  , FOREIGN KEY(collectionID) REFERENCES Collections(id) , FOREIGN KEY(Comic) REFERENCES Comics(id));
+`)
+	statement.Exec()
+
+	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS rel_Comic_File(
+  		id INTEGER PRIMARY KEY, comicID INTEGER, pathID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(id) , FOREIGN KEY(pathID) REFERENCES Files(id) );
+`)
+	statement.Exec()
+
 	fmt.Println("Database Initiated")
-
 
 
 }
