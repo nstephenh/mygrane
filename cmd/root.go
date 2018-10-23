@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "Mygrane",
 	Short: "Mygrane is a comics manager",
 	Long: `Mygrane is a comics manager. https://github.com/nstephenh/Mygrane`,
@@ -23,10 +23,10 @@ var dbFile = "$HOME/.Mygrane.db"
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
 		"config file (default is $HOME/.Mygrane.yaml)")
-	rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
-	rootCmd.PersistentFlags().StringVar(&dbFile, "db", "",
+	RootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+	RootCmd.PersistentFlags().StringVar(&dbFile, "db", "",
 		"database file (default is $HOME/.Mygrane.db")
 }
 
@@ -67,7 +67,7 @@ func initConfig() {
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
