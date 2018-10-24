@@ -8,6 +8,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var dbloc string // Global Variable that holds the database file location.
+
 func Init_DB(dblocation string) {
 	if dblocation == ""{
 		home, err := homedir.Dir()
@@ -18,6 +20,7 @@ func Init_DB(dblocation string) {
 		}
 		dblocation = home + "/" + ".Mygrane.db"
 	}
+	dbloc = dblocation;
 	database, _ := sql.Open("sqlite3", dblocation)
 	/*
 	Database tables:
@@ -52,8 +55,14 @@ func Init_DB(dblocation string) {
   		id INTEGER PRIMARY KEY, comicID INTEGER, pathID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(id) , FOREIGN KEY(pathID) REFERENCES Files(id) );
 `)
 	statement.Exec()
-
+	database.Close()
 	fmt.Println("Database Initiated")
 
+}
 
+
+func Add_File(){
+	db, _ := sql.Open("sqlite3", dbloc)
+	db.Prepare("")
+	db.Close()
 }

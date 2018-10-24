@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/nstephenh/mygrane/Mygrane"
 	"github.com/spf13/cobra"
 )
 
@@ -29,10 +30,12 @@ mygrane import -f CMC CompleteMarvelChronology
 		fmt.Println("import called")
 		for i:= 0; i < len(args); i++{
 			fmt.Println("Importing Directory: " + args[i])
-			//Import each called directory
+				Mygrane.Import(args[i], format)
 		}
 	},
 }
+
+var format = "0Day"
 
 func init() {
 	RootCmd.AddCommand(importCmd)
@@ -47,9 +50,9 @@ func init() {
 	// is called directly, e.g.:
 	// importCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	var importme string;
+	//var importme string;
 
-	importCmd.Flags().StringVarP(&importme, "format","f", "0Day", `
+	importCmd.Flags().StringVarP(&format, "format","f", "0Day", `
 Format for the imported files, can be:
 0 = Default, "Title.cbz (year) (rg).cbz", may be in subdirectories by week
 CMC = yyyymmdd Title num.cbz, may be in monthly/yearly subdirectores`)
