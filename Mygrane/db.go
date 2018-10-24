@@ -27,13 +27,11 @@ func Init_DB(dblocation string) {
 	Collections - groups of comics, can be titles, reading orders, etc
 	rel_Collection_Comic - relation table between ^ and v
 	Comics - Stores indivudal comics
-	rel_Comic_File - relation table between ^ and v
 	Files - Stores the individual instances of files, each cbz etc
 	 */
 
 	statement, _ := database.Prepare(`CREATE TABLE IF NOT EXISTS Comics(
-		id INTEGER PRIMARY KEY, title TEXT);
-
+		id INTEGER PRIMARY KEY, title TEXT, number TEXT, coverDate REAL, cdAccuracy INT,  releaseDate REAL, rdAccuaracy INT);
 `)
 	statement.Exec()
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Collections(
@@ -42,17 +40,12 @@ func Init_DB(dblocation string) {
 	statement.Exec()
 
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Files(
-		id INTEGER PRIMARY KEY, path TEXT, hash TEXT, releaseGroup TEXT);
+		id INTEGER PRIMARY KEY, path TEXT, hash TEXT, releaseGroup TEXT, fileDate REAL, fdAccuracy INT, comicID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(id));
 `)
 	statement.Exec()
 
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS rel_Collection_Comic(
 		id INTEGER PRIMARY KEY, collectionID INTEGER , comicID INTEGER  , FOREIGN KEY(collectionID) REFERENCES Collections(id) , FOREIGN KEY(Comic) REFERENCES Comics(id));
-`)
-	statement.Exec()
-
-	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS rel_Comic_File(
-  		id INTEGER PRIMARY KEY, comicID INTEGER, pathID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(id) , FOREIGN KEY(pathID) REFERENCES Files(id) );
 `)
 	statement.Exec()
 	database.Close()
@@ -64,5 +57,7 @@ func Init_DB(dblocation string) {
 func Add_File(){
 	db, _ := sql.Open("sqlite3", dbloc)
 	db.Prepare("")
+
+
 	db.Close()
 }
