@@ -20,7 +20,7 @@ func Init_DB(dblocation string) {
 		}
 		dblocation = home + "/" + ".Mygrane.db"
 	}
-	dbloc = dblocation;
+	dbloc = dblocation
 	database, _ := sql.Open("sqlite3", dblocation)
 	/*
 	Database tables:
@@ -29,9 +29,15 @@ func Init_DB(dblocation string) {
 	Comics - Stores indivudal comics
 	Files - Stores the individual instances of files, each cbz etc
 	 */
+	 if true{
+	 	database.Exec("DROP TABLE Files; DROP TABLE Comics; Drop Table Collections; Drop Table Tags; DROP TABLE rel_Collection_Comic")
+	 	fmt.Println("DEBUG: DROPPED ALL TABLES")
+	 }
+
+
 
 	statement, _ := database.Prepare(`CREATE TABLE IF NOT EXISTS Comics(
-		id INTEGER PRIMARY KEY, title TEXT, number TEXT, coverDate REAL, cdAccuracy INT,  releaseDate REAL, rdAccuaracy INT);
+		id INTEGER PRIMARY KEY, title TEXT, number TEXT, coverDate REAL, cdAccuracy INT,  releaseDate REAL, rdAccuaracy INT, isTPB INT);
 `)
 	statement.Exec()
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Collections(
@@ -40,12 +46,16 @@ func Init_DB(dblocation string) {
 	statement.Exec()
 
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Files(
-		id INTEGER PRIMARY KEY, path TEXT, hash TEXT, releaseGroup TEXT, fileDate REAL, fdAccuracy INT, comicID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(id));
+		path TEXT, hash TEXT PRIMARY KEY, releaseGroup TEXT, fileDate REAL, fdAccuracy INT, comicID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(ID));
 `)
 	statement.Exec()
 
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS rel_Collection_Comic(
-		id INTEGER PRIMARY KEY, collectionID INTEGER , comicID INTEGER  , FOREIGN KEY(collectionID) REFERENCES Collections(id) , FOREIGN KEY(Comic) REFERENCES Comics(id));
+		id INTEGER PRIMARY KEY, collectionID INTEGER , comicID INTEGER  , FOREIGN KEY(collectionID) REFERENCES Collections(id) , FOREIGN KEY(comicID) REFERENCES Comics(id));
+`)
+	statement.Exec()
+	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Tags(
+		id INTEGER PRIMARY KEY, tag TEXT, fileHash TEXT , FOREIGN KEY(fileHash) REFERENCES Files(hash));
 `)
 	statement.Exec()
 	database.Close()
@@ -54,10 +64,11 @@ func Init_DB(dblocation string) {
 }
 
 
-func Add_File(){
+func (f *file)DBUpdate(){
 	db, _ := sql.Open("sqlite3", dbloc)
-	db.Prepare("")
-
-
+	result, _ := db.Exec(`INSERT OR REPLACE INTO Files(path, hash, releaseGroup, fileDate, fdAccuracy) 
+						 VALUES (?, ?, ?, ?, ?)`, f.path, f.hash, f.rg, f.fileDate, f.fdAccuaracy)
+	fmt.Println(result.RowsAffected())
 	db.Close()
 }
+

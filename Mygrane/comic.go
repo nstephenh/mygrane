@@ -13,5 +13,6 @@ type comic struct{
 	cdAccuracy int
 	releaseDate int
 	rdAccuracy int
+	isTPB int
 }
 
