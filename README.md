@@ -2,6 +2,8 @@
 My Graphic Art Novel e-libary, or MyGrANe (pronounced migraine), is a python comic manager.
 The current most useful feature is as a program to sort a directory of comics.
 
+## DISCLAIMER: Mygrane is currently undergoing a large update, porting it to golang and implementing a database. This will allow future epandability, but the python version won't see any updates. The python version still works though, it just only does one thing (although very well).
+
 # Comic Naming Convention
 Mygrane uses the names of comics to extract information about them, and will produce unexpected results if not named in this manner:
 
