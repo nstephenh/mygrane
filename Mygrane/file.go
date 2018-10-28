@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -19,7 +21,7 @@ type file struct{
 	hash string
 	rg string //release group
 	fileDate int // Year (cover year if possible) that is in the file name
-	fdAccuaracy int
+	fdAccuaracy int //0 = no date, 1 = Year, 2 = Month , 3 = Day, 4 = From a 0-Day therefore this is the release date (99% confidence)
 	comicID int // for relational table
 	tags []string
 }
@@ -34,13 +36,32 @@ func NewFile(path string, info os.FileInfo, format string) (f *file, err error){
 	switch format {
 	case "0Day":
 		fmt.Println( "Importing 0-Day")
-		//do stuff
-	case "CMC":
+		zday, err  := regexp.Compile(`0-Day Week of ([12][90]\d\d.[01]\d.[0-3]\d)`)
+		if str := zday.FindStringSubmatch(f.path); str != nil {
+			//Strip the dots and convert to an integer
+			f.fileDate, err = strconv.Atoi(strings.Replace(str[1], ".", "", 2))
+			f.fdAccuaracy = 4
+			f.DBUpdate()
+			f.Print()
+			return f, err
+		}
 
+	case "CMC":
 		fmt.Println( "Importing CMC")
 		//do stuff
 	default:
-		fmt.Println( "Invalid Format")
+		fmt.Println( "Invalid/Unknown Format")
+	}
+	//Default date grabbing
+	rgx, err  := regexp.Compile(`([12][90]\d\d)`)
+	if strs := rgx.FindAllString(f.path, -1); strs != nil {
+
+		//Convert to an integer
+		f.fileDate, err = strconv.Atoi(strs[len(strs)-1])
+		f.fdAccuaracy = 1
+
+	}else{
+		f.fdAccuaracy = 0
 	}
 	f.DBUpdate()
 	f.Print()
@@ -48,6 +69,7 @@ func NewFile(path string, info os.FileInfo, format string) (f *file, err error){
 }
 func (f file) Print(){
 	fmt.Print(f.path + " (" + f.hash + ") ")
+	fmt.Print(" from date: " + strconv.Itoa(f.fileDate) + " ")
 	for _, tag := range f.tags{
 		fmt.Print(tag + ", ")
 	}

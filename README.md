@@ -1,5 +1,5 @@
 # mygrane
-My Graphic Art Novel e-libary, or MyGrANe (pronounced migraine), is a python comic manager.
+My Graphic Art Novel e-libary, or MyGrANe (pronounced migraine), is a cli comic manager.
 The current most useful feature is as a program to sort a directory of comics.
 
 # Comic Naming Convention

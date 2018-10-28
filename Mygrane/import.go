@@ -43,15 +43,5 @@ func Import(dir string, format string)  (err error) {
 		return nil
 	})
 
-	switch format {
-	case "0Day":
-		fmt.Println( "Importing 0-Day")
-		//do stuff
-	case "CMC":
-		fmt.Println( "Importing CMC")
-		//do stuff
-	default:
-		fmt.Println( "Invalid Format")
-	}
 	return
 }

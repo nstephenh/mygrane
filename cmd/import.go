@@ -52,7 +52,7 @@ func init() {
 
 	//var importme string;
 
-	importCmd.Flags().StringVarP(&format, "format","f", "0Day", `
+	importCmd.Flags().StringVarP(&format, "format","f", "", `
 Format for the imported files, can be:
 0 = Default, "Title.cbz (year) (rg).cbz", may be in subdirectories by week
 CMC = yyyymmdd Title num.cbz, may be in monthly/yearly subdirectores`)

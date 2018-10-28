@@ -55,7 +55,7 @@ func Init_DB(dblocation string) {
 `)
 	statement.Exec()
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Tags(
-		id INTEGER PRIMARY KEY, tag TEXT, fileHash TEXT , FOREIGN KEY(fileHash) REFERENCES Files(hash));
+		id INTEGER PRIMARY KEY, fileHash TEXT, tag TEXT, FOREIGN KEY(fileHash) REFERENCES Files(hash));
 `)
 	statement.Exec()
 	database.Close()
@@ -66,9 +66,12 @@ func Init_DB(dblocation string) {
 
 func (f *file)DBUpdate(){
 	db, _ := sql.Open("sqlite3", dbloc)
-	result, _ := db.Exec(`INSERT OR REPLACE INTO Files(path, hash, releaseGroup, fileDate, fdAccuracy) 
+	db.Exec(`INSERT OR REPLACE INTO Files(path, hash, releaseGroup, fileDate, fdAccuracy) 
 						 VALUES (?, ?, ?, ?, ?)`, f.path, f.hash, f.rg, f.fileDate, f.fdAccuaracy)
-	fmt.Println(result.RowsAffected())
+	//TODO: ADD tags
+	for _, tag := range f.tags {
+		db.Exec("INSERT INTO Tags(fileHash,tag) VALUES (?,?)", f.hash, tag)
+	}
 	db.Close()
 }
 
