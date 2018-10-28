@@ -2,6 +2,7 @@ package Mygrane
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -25,7 +26,7 @@ type file struct{
 	fileDate int // Year (cover year if possible) that is in the file name
 	fdAccuaracy int //0 = no date, 1 = Year, 2 = Month , 3 = Day, 4 = From a 0-Day therefore this is the release date (99% confidence)
 	format int // 0 = unknown 1 = C2C 2 = Digital
-	comicID int // for relational table
+	comicID sql.NullInt64 // for relational table
 	tags []string
 }
 
