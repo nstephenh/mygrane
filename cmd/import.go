@@ -54,7 +54,9 @@ func init() {
 
 	importCmd.Flags().StringVarP(&format, "format","f", "", `
 Format for the imported files, can be:
-0 = Default, "Title.cbz (year) (rg).cbz", may be in subdirectories by week
-CMC = yyyymmdd Title num.cbz, may be in monthly/yearly subdirectores`)
+Default, "Title.cbz (year) (rg).cbz"
+0Day = Looks for 0-Day Week of ([12][90]\d\d.[01]\d.[0-3]\d) aka yyyy.mm.dd in the path
+CMC = Looks for [12][90]\d\d[01]\d aka yyyymm  in title 
+`)
 }
 

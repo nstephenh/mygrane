@@ -46,7 +46,7 @@ func Init_DB(dblocation string) {
 	statement.Exec()
 
 	statement, _ = database.Prepare(`CREATE TABLE IF NOT EXISTS Files(
-		path TEXT, hash TEXT PRIMARY KEY, releaseGroup TEXT, fileDate REAL, fdAccuracy INT, comicID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(ID));
+		path TEXT, hash TEXT PRIMARY KEY, title TEXT, number TEXT, releaseGroup TEXT, fileDate REAL, fdAccuracy INT, format INT, comicID INTEGER, FOREIGN KEY(comicID) REFERENCES Comics(ID));
 `)
 	statement.Exec()
 
@@ -66,12 +66,20 @@ func Init_DB(dblocation string) {
 
 func (f *file)DBUpdate(){
 	db, _ := sql.Open("sqlite3", dbloc)
-	db.Exec(`INSERT OR REPLACE INTO Files(path, hash, releaseGroup, fileDate, fdAccuracy) 
-						 VALUES (?, ?, ?, ?, ?)`, f.path, f.hash, f.rg, f.fileDate, f.fdAccuaracy)
-	//TODO: ADD tags
+	db.Exec(`INSERT OR REPLACE INTO Files(path, hash, title,  number, releaseGroup, fileDate, fdAccuracy, format) 
+						 VALUES (?, ?, ?, ?, ?, ?)`, f.path, f.title, f.number, f.hash, f.rg, f.fileDate, f.fdAccuaracy, f.format)
 	for _, tag := range f.tags {
 		db.Exec("INSERT INTO Tags(fileHash,tag) VALUES (?,?)", f.hash, tag)
 	}
 	db.Close()
 }
+
+func (c *comic)DBUpdate(){
+	db, _ := sql.Open("sqlite3", dbloc)
+	db.Exec(`INSERT OR REPLACE INTO Comics(title , number , coverDate , cdAccuracy , releaseDate , rdAccuaracy , isTPB) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?)`, c.title, c.number, c.coverDate, c.cdAccuracy, c.releaseDate, c.rdAccuracy, c.isTPB)
+	db.Close()
+
+}
+
 
