@@ -36,70 +36,63 @@ func NewFile(path string, info os.FileInfo, format string) (f *file, err error){
 	os.Open(f.path)
 	f.hash, err = hash_file_md5(f.path)
 	f.tags = f.GetTags()
-	frontpart := filepath.Base(f.path);
+
+	// Get Filename and Issue Number
+	frontpart := filepath.Base(f.path)
 	frontregex, err := regexp.Compile(`\(`)
 	if frontregex.MatchString(frontpart){
-		frontpart = frontregex.Split(filepath.Base(f.path), 1)[0]
+		frontpart = frontregex.Split(filepath.Base(f.path), -1)[0]
 	}
 	//Look for "x of x covers" part
 	coversregex, err := regexp.Compile(`\d{1,2} of \d{1,2} covers`)
 	if coversregex.MatchString(frontpart) && (err == nil){
-		frontpart = coversregex.Split(frontpart, 1)[0]
+		frontpart = coversregex.Split(frontpart, -1)[0]
 	}
 	spaceregex, err := regexp.Compile(` `)
 	if spaceregex.MatchString(frontpart) && (err == nil){
 		splits := spaceregex.Split(frontpart, -1)
-		f.title = strings.Join(splits[0:len(splits)-2], " ") //Everything but the last word
+		splits = splits[:len(splits)-1]
+		f.title = strings.Join(splits[0:len(splits)-1], " ") //Everything but the last word
 		f.number = splits[len(splits)-1] //The last word
 	}else{
 		f.title = frontpart //Fallback to everything
 	}
-	switch format {
+
+	//Getting Dates
+	switch (format) {
 	case "0Day":
-		fmt.Println( "Importing 0-Day")
-		zday, err  := regexp.Compile(`0-Day Week of ([12][90]\d\d.[01]\d.[0-3]\d)`)
-		if str := zday.FindStringSubmatch(f.path); str != nil {
-			//Strip the dots and convert to an integer
-			f.fileDate, err = strconv.Atoi(strings.Replace(str[1], ".", "", 2))
-			f.fdAccuaracy = 4
-			f.DBUpdate()
-			f.Print()
-			return f, err
-		}
-
+		f.try_0day()
 	case "CMC":
-		fmt.Println( "Importing CMC")
-		fmt.Println( "Importing 0-Day")
-		zday, err  := regexp.Compile(`([12][90]\d\d[01]\d)`)
-		if str := zday.FindStringSubmatch(f.path); str != nil {
-			//Strip the dots and convert to an integer
-			f.fileDate, err = strconv.Atoi(str[1])
-			f.fdAccuaracy = 2
-			f.DBUpdate()
-			f.Print()
-			return f, err
-		}
-
-		//do stuff
+		f.try_cmc()
 	default:
-		fmt.Println( "Invalid/Unknown Format")
-	}
-	//Default date grabbing
-	rgx, err  := regexp.Compile(`([12][90]\d\d)`)
-	if strs := rgx.FindAllString(f.path, -1); strs != nil {
-
-		//Convert to an integer
-		f.fileDate, err = strconv.Atoi(strs[len(strs)-1])
-		f.fdAccuaracy = 1
-
-	}else{
-		f.fdAccuaracy = 0
+		fmt.Println("Unknown Format, trying all")
+		rgx, _ := regexp.Compile(`\(([12][90]\d\d)\)`)
+		if success, _ := f.try_0day(); success {
+			//fmt.Println("0-Day matched")
+			//Don't actually need to do anything here, the if statement runs the command
+		}else if success, _ := f.try_cmc(); success{
+			//fmt.Println("CMC Matched")
+			//Don't actually need to do anything here, the if statement runs the command
+		}else if strs := rgx.FindAllStringSubmatch(filepath.Base(f.path), -1); strs != nil {
+			//Default date grabbing
+			//Convert to an integer
+			fmt.Println("Importing from date tag")
+			//								    V Last Match V The substring, without the patrenthesis
+			f.fileDate, err = strconv.Atoi(strs[len(strs)-1][1])
+			f.fdAccuaracy = 1
+		} else {
+			f.fdAccuaracy = 0
+		}
 	}
 	f.DBUpdate()
 	f.Print()
 	return
 }
-func (f file) Print(){
+
+
+
+
+func (f *file) Print(){
 	fmt.Print(f.title + " " + f.number +  " (" + strconv.Itoa(f.fileDate) + ") ")
 	for _, tag := range f.tags{
 		fmt.Print( " (" + tag + ") ")
@@ -110,6 +103,35 @@ func (f file) Print(){
 
 func (f file)AssociateComic(){
 
+}
+
+
+func (f *file)try_cmc() (success bool, err error){
+	zday, err  := regexp.Compile(`([12][90]\d\d[01]\d)`)
+	//This format must be the start of the string
+	if str := zday.FindStringSubmatchIndex(f.title); str != nil && str[0] == 0{
+		//Strip the dots and convert to an integer
+		fmt.Println("Importing as CMC")
+		//We use substring indecies here as a doublecheck since
+		f.fileDate, err = strconv.Atoi(f.title[str[0]:str[1]])
+		f.fdAccuaracy = 2
+		// Also need to change title and strip out the date part
+		f.title = f.title[str[1]+1:]
+
+		return true, err
+	}
+	return false, err
+}
+func (f file)try_0day() (success bool, err error){
+	zday, err := regexp.Compile(`0-Day Week of ([12][90]\d\d.[01]\d.[0-3]\d)`)
+	if str := zday.FindStringSubmatch(f.path); str != nil {
+		//Strip the dots and convert to an integer
+		fmt.Println("Importing as 0-Day")
+		f.fileDate, err = strconv.Atoi(strings.Replace(str[1], ".", "", 2))
+		f.fdAccuaracy = 4
+		return true, err
+	}
+	return false, err
 }
 
 func (f file)GetTags() []string{
