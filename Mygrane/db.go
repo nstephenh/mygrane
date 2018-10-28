@@ -107,7 +107,14 @@ func (c *comic)DBUpdate(){
 func DB_Get_Files(filter string) (result []file) {
 	db, _ := sql.Open("sqlite3", dbloc)
 	fmt.Println("Querying DB")
-	if rows, err := db.Query(`SELECT * FROM files`); err == nil {
+	var q string;
+	if filter != ""{
+		q = "SELECT * FROM files WHERE " + filter
+	}else{
+		q = "SELECT * FROM files"
+	}
+
+	if rows, err := db.Query(q); err == nil {
 		defer rows.Close()
 		var result []file
 		for rows.Next(){
