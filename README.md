@@ -1,9 +1,24 @@
-# mygrane
+# MyGrAne
 My Graphic Art Novel e-libary, or MyGrANe (pronounced migraine), is a cli comic manager.
-The current most useful feature is as a program to sort a directory of comics.
 
-# Comic Naming Convention
-Mygrane uses the names of comics to extract information about them, and will produce unexpected results if not named in this manner:
+## Usage
+
+Mygrane uses cobra for commands, and can accept a few.
+
+### import
+```
+mygrane import [-f format] directory_or_file
+```
+Import will add any file in the specified directory to the database as a hash of the file, as well as any information it can gather from the name of the file and import directory.
+
+### list
+```
+mygrane list
+```
+List lists all the comics in the database
+
+## Preferred Comic Naming Convention
+Mygrane uses the names of comics to extract information about them. This is the preferred naming convention:
 
 ```
 Title issuenumber (pubyear) (othertags).extension
@@ -18,48 +33,11 @@ pubyear - The year of publication of the comic, automatically determined by the 
 
 othertags - Any number of strings that are enclosed in parenthesis in the filename.
 
-extension - cbz, cbr, or pdf.
+extension - cbz or cbr, case insensitive
 
+### Other naming conventions 
 
-# Uses
-
-## As a program to sort your comic library
-By writing a simple script, we can sort a collection of comics that use our naming convention.
-location should be the path to your collection (absolute).
-Your collection should be a directory of only comic files for the first run.
-Empty directories or directories not following convention can produce unexpected results.
-```python
-from comic import Comic
-from collection import Collection
-
-location = "/the/path/to/your/collection"
-stuff = Collection(location)
-stuff.sort(test=False, allow_duplicates="True") 
-#Change to allow_duplicates to "Delete" to delete duplicates (I'm not responsible if this deletes anything important)
-print(stuff)
 ```
-If you would like to run the program without moving any files, set test to True,
-and then pipe the results of the script to a program such as less or more.
+yyyymmdd Title issuenumber.extension //This is referred to as cmc
+```
 
-### How the sorting algorithm works
-First, the program seperates all current objects between comics and series.
-All the series objects are added to the new collection, while comics are added to a temporary collection for sorting.
-The new collection is sorted by issue number.
-The program checks each issue in the temporary collection against all the existing series and determines if meets the following crieteria:
-   * The title is approximatly the same (ignoring changes in capitalization and punctuation)
-   * The last issue in the series has the previous issue number (ex, issue
-   * The last issue in the series was published before the checked issue
-If either criteria isn't met, then a new series is made for the issue in question.
-
-Make sure all files you are sorting follow the naming convention
-
-
-## As a graphical library
-Note: There hasn't been much development on this front, and as such it is not garunteed to work
-![Image](/docs/Library%20Manager.png?raw=true "The Library")
-
-## As a framework
-By importing mygrane as a dependency for your project, you can use the comic and collection objects in your own project.
-
-# Dependencies
-Unrar. I've tried to include a compiled binary.
