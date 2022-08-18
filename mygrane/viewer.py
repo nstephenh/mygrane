@@ -1,6 +1,8 @@
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
@@ -9,12 +11,10 @@ import zipfile
 from mygrane.comic import Comic
 
 
-
 class ViewerWindow(Gtk.Window):
 
     def __init__(self):
         Gtk.Window.__init__(self)
-
 
         PageFlow = Gtk.FlowBox()
         PageFlow.set_valign(Gtk.Align.START)
@@ -24,7 +24,6 @@ class ViewerWindow(Gtk.Window):
         PageScroll = Gtk.ScrolledWindow()
         PageScroll.add(PageFlow)
         PageScroll.show()
-
 
         self.add(PageScroll)
         self.set_default_size(600, 1000)
@@ -43,9 +42,9 @@ class ViewerWindow(Gtk.Window):
                 thumbnail = loader.get_pixbuf()
                 h = thumbnail.get_height()
                 w = thumbnail.get_width()
-                r = h/w  # Preserve Aspect Ratio
-                windowwidth= self.get_size()[0]
-                pixbuf = Pixbuf.scale_simple(thumbnail, windowwidth, windowwidth*r, True)
+                r = h / w  # Preserve Aspect Ratio
+                windowwidth = self.get_size()[0]
+                pixbuf = Pixbuf.scale_simple(thumbnail, windowwidth, windowwidth * r, True)
                 self.get_child().get_child().get_child().add(Gtk.Image.new_from_pixbuf(pixbuf))
 
 

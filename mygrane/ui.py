@@ -1,8 +1,9 @@
 import os
+
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-
 
 from mygrane.collection import Series, Collection
 from mygrane.comic import Comic
@@ -35,7 +36,6 @@ class LibraryManager(Gtk.Window):
         self.mainTitleScroll.add(titleFlow)
         self.set_default_size(window_width, 400)
 
-
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.props.title = "Library Manager"
@@ -47,7 +47,7 @@ class LibraryManager(Gtk.Window):
         viewselect = Gtk.ComboBox.new_with_model(viewer_store)
         viewselect.connect("changed", self.on_viewer_changed)
 
-        #hb.add(viewselect)
+        # hb.add(viewselect)
 
         back_button = Gtk.Button("<")
         back_button.connect("clicked", self.view_library)
@@ -86,13 +86,13 @@ class LibraryManager(Gtk.Window):
         for title in collection.contains:
             flow.add(self.add_title(title))
         self.set_focus()
-        #self.show_all()
+        # self.show_all()
 
     def on_viewer_changed(self):
         pass
 
     def on_series_click(self, button, series):
-        #Switch the window to something else
+        # Switch the window to something else
         newFlow = Gtk.FlowBox()
         newFlow.set_valign(Gtk.Align.START)
 
@@ -106,7 +106,7 @@ class LibraryManager(Gtk.Window):
 
     def on_comic_click(self, button, file_to_open):
         call(["evince" + ' "' + file_to_open + '"', "-1"], shell=True)
-        #os.system("evince" + ' "' + file_to_open + '"')
+        # os.system("evince" + ' "' + file_to_open + '"')
         print(file_to_open)
 
 

@@ -1,15 +1,16 @@
 import os
-import zipfile
-from unrar import rarfile
-#import gi
-#gi.require_version('Gtk', '3.0')
-#gi.require_version('GdkPixbuf', '2.0')
-#from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
-
-from mygrane.preferences import *
-
 import re
 import shutil
+import zipfile
+
+from mygrane.preferences import *
+from unrar import rarfile
+
+
+# import gi
+# gi.require_version('Gtk', '3.0')
+# gi.require_version('GdkPixbuf', '2.0')
+# from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
 
 
 class Comic:
@@ -40,7 +41,7 @@ class Comic:
         self.tags = []
         self.set_info_from_name()
         junk = self.title + str(self.issueNum) + str(self.pubyear) + self.containing_directory.split('/')[-1]
-        #self.ident = hashlib.md5(junk.encode()).hexdigest()
+        # self.ident = hashlib.md5(junk.encode()).hexdigest()
 
     def __str__(self):
         return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
@@ -54,19 +55,19 @@ class Comic:
         a previous "series" parameter has been removed as it was not absolute
         """
         olditemdir = self.containing_directory + "/"
-        #if series:
-            #self.title = series.name
-            #self.containing_directory = series.file + "/"
+        # if series:
+        # self.title = series.name
+        # self.containing_directory = series.file + "/"
         if dir_name:
             self.containing_directory = dir_name
         if (olditemdir == self.containing_directory):
             return True
-        print("Moving " + olditemdir+self.file + " to " + dir_name)
-        #print(olditemdir)
-        #print(self.containing_directory)
+        print("Moving " + olditemdir + self.file + " to " + dir_name)
+        # print(olditemdir)
+        # print(self.containing_directory)
 
         try:
-            shutil.move(olditemdir +"/"+ self.file, self.containing_directory +"/"+ self.file)
+            shutil.move(olditemdir + "/" + self.file, self.containing_directory + "/" + self.file)
             try:
                 os.rmdir(olditemdir)  # This is to remove empty directories
                 print("Removed empty directory for " + self.file)
@@ -81,7 +82,7 @@ class Comic:
                 print(h)
             try:
 
-                shutil.move(olditemdir +"/"+ self.file, self.containing_directory +"/"+ self.file)
+                shutil.move(olditemdir + "/" + self.file, self.containing_directory + "/" + self.file)
                 return True
             except OSError as f:
                 print("Error, comic already exists in directory or")
@@ -119,7 +120,7 @@ class Comic:
                         return
                 frontpart = coversplit
 
-                #throw out volume numbers
+                # throw out volume numbers
                 try:
                     frontpart = re.sub(" v\d{1,2} ", " ", frontpart)
                     frontpart = re.sub(" Vol\d{1,2} ", " ", frontpart)
@@ -128,7 +129,7 @@ class Comic:
 
                 try:
                     longname = " ".join(frontpart.split()[:-1])
-                    #left this in in case its important
+                    # left this in in case its important
                     if re.match("v\d{1,2}", longname.split()[-1]):
                         self.title = " ".join(longname.split()[:-1])
                         print("its got a volume number")
@@ -161,30 +162,29 @@ class Comic:
             except AttributeError:
                 print("That ain't a comic!")
 
-
     def set_thumbnail_from_zip(self):
         zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)
         for file_in_zip in zf.namelist()[:2]:
             if ".jpg" in file_in_zip.lower() or ".png" in file_in_zip.lower():
-                #print("Found image: ", file_in_zip, " -- ")
+                # print("Found image: ", file_in_zip, " -- ")
                 cover = zf.read(file_in_zip)
                 zf.close()
                 return self.set_thumbnail_to_image(cover)
             else:
                 pass
-                #print("First image not an image: " + file_in_zip)
+                # print("First image not an image: " + file_in_zip)
         return False
 
     def set_thumbnail_from_rar(self):
         rf = rarfile.RarFile(self.containing_directory + "/" + self.file)
         for file_in_rar in sorted(rf.namelist())[:2]:
             if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
-                #print("Found image: ", file_in_rar, " -- ")
+                # print("Found image: ", file_in_rar, " -- ")
                 cover = rf.read(file_in_rar)
                 return self.set_thumbnail_to_image(cover)
             else:
                 pass
-                #print("First image not an image: " + file_in_rar)
+                # print("First image not an image: " + file_in_rar)
         return False
 
     def set_thumbnail_to_image(self, image_to_use):
@@ -195,8 +195,8 @@ class Comic:
             thumbnail = loader.get_pixbuf()
             h = thumbnail.get_height()
             w = thumbnail.get_width()
-            r = h/w  # Preserve Aspect Ratio
-            pixbuf = Pixbuf.scale_simple(thumbnail, cover_width, cover_width*r, True)
+            r = h / w  # Preserve Aspect Ratio
+            pixbuf = Pixbuf.scale_simple(thumbnail, cover_width, cover_width * r, True)
             self.thumbnail = pixbuf
             return True
         except Exception:

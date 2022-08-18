@@ -1,12 +1,14 @@
 import os
+import re
+
 from mygrane import preferences
 from mygrane.comic import Comic
-import re
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
 
 thereplace = re.compile('the', flags=re.IGNORECASE)
+
 
 class Series:
     def __init__(self, location="", name="", contents=[]):
@@ -14,10 +16,10 @@ class Series:
         self.title = name  # for compatability with comic objects
         self.issue = -1
         self.contains = []
-        #print(contents) # debug line
+        # print(contents) # debug line
         if contents != []:
             self.contains = contents
-            self.file = self.contains[0].containing_directory #Should be absolute...
+            self.file = self.contains[0].containing_directory  # Should be absolute...
         else:
             self.contains = []
             print("Initializing " + location)
@@ -30,9 +32,9 @@ class Series:
                         issue.set_thumbnail()
                     self.contains.append(issue)
             self.file = location
-        #print(self.file) #Debug line
+        # print(self.file) #Debug line
         if name == "":
-            #print(self.file)
+            # print(self.file)
             print(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
@@ -55,9 +57,9 @@ class Series:
         if oursbase == theirsbase:
             # If the only diference is special characters and whitespace, then they are probably the same
             return True
-        oursbase = andpersand.sub("",  oursbase)
-        theirsbase = andpersand.sub("",  theirsbase)
-        theirsbase = thereplace.sub("",  theirsbase)
+        oursbase = andpersand.sub("", oursbase)
+        theirsbase = andpersand.sub("", theirsbase)
+        theirsbase = thereplace.sub("", theirsbase)
         oursbase = thereplace.sub("", oursbase)
         if oursbase == theirsbase:
             # same as above but with provisions for the word and (since it is sometimes replaced with ampersand)
@@ -83,11 +85,11 @@ class Collection:
             for item in sorted(os.listdir(location)):
                 sublocation = location + "/" + item
                 if os.path.isdir(sublocation):
-                    #print(item)
-                    if flatten==False:
+                    # print(item)
+                    if flatten == False:
                         self.contains.append(Series(sublocation))
                     else:
-                        #If flatten is true then we want to cycle through each item
+                        # If flatten is true then we want to cycle through each item
                         for subitem in sorted(os.listdir(sublocation + "/")):
                             self.contains.append(Comic(sublocation + "/", subitem))
                 else:
@@ -116,11 +118,11 @@ class Collection:
         :param allow_duplicates: "true" "false" or "delete". Delete will keep the copy with the highest filesize
         :return:
         """
-        temp_Contains = [] # This is what we will return
-        sortme = [] # This is what we use as a temporary container.
-        special_second = [] # issues that might have come out after issue 1 go here. Any issue number less than 1
+        temp_Contains = []  # This is what we will return
+        sortme = []  # This is what we use as a temporary container.
+        special_second = []  # issues that might have come out after issue 1 go here. Any issue number less than 1
 
-        #The following handles comics with no issue number by skipping them for the sort
+        # The following handles comics with no issue number by skipping them for the sort
         for item in self.contains:
             if type(item) is Comic:
                 if item.issueNum is None:
@@ -168,10 +170,11 @@ class Collection:
                             and (item.pubyear - lastissue.pubyear) in [0, 1] \
                             and ((0 < (item.issueNum - lastissue.issueNum) <= 1)
                                  or (0 == (item.issueNum - lastissue.issueNum)
-                                 and (str.lower(allow_duplicates) != "false") and (item.pubyear - lastissue.pubyear == 0))):
+                                     and (str.lower(allow_duplicates) != "false") and (
+                                             item.pubyear - lastissue.pubyear == 0))):
                         # if the file is a duplicate: # Comparing issueStr instead of issueNum
                         if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == lastissue.issueStr \
-                                and (item.pubyear - lastissue.pubyear == 0))):
+                                                                         and (item.pubyear - lastissue.pubyear == 0))):
                             # and the last issue is larger or the same size
                             if lastissue.size >= item.size:
                                 if not test:
@@ -182,8 +185,8 @@ class Collection:
                             else:
                                 if not test:
                                     # delete the last issue
-                                    #print(lastissue.containing_directory)
-                                    #print(lastissue.file)
+                                    # print(lastissue.containing_directory)
+                                    # print(lastissue.file)
                                     os.remove(lastissue.containing_directory + "/" + lastissue.file)
                                     print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
                                     # and move the file as one would normally
@@ -217,7 +220,7 @@ class Collection:
                         createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                         item.move_file(self.location + createddir)
                         temp_Contains.append(Series(name=item.title,
-                                                    location=self.location,  contents=[item]))
+                                                    location=self.location, contents=[item]))
                     except os.error:
                         print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
@@ -227,7 +230,7 @@ class Collection:
         temp_Contains.sort(key=lambda x: x.pubyear)
         temp_Contains.reverse()
 
-        #Sort all the special seconds
+        # Sort all the special seconds
         for item in special_second:
             index = 0
             found = False
@@ -248,7 +251,7 @@ class Collection:
 
                         # if the file is a duplicate: # Comparing issueStr instead of issueNum
                         if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == lastissue.issueStr
-                                and (item.pubyear - lastissue.pubyear == 0))):
+                                                                         and (item.pubyear - lastissue.pubyear == 0))):
                             # and the last issue is larger or the same size
                             if lastissue.size >= item.size:
                                 if not test:
@@ -299,7 +302,6 @@ class Collection:
                 else:
                     # ToDo: Add in the ability to update to existing series under certain circumstances
                     temp_Contains.append(Series(name=item.title, contents=[item]))
-
 
         # If series only contains one item, make it a comic object
         index = 0
