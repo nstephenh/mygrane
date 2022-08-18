@@ -27,8 +27,8 @@ def main():
                 print("""
 Available commands:
     quit            Quits Mygrane
-    init <loc>      Initializes Library
-    test            Runs a sort in "Test mode" where it does not move any files
+    init <path>     Initializes Library at path
+    test            Runs a sort in "Test mode" where it does not move any files. Use "print" to see the result.
     sort            Sorts library, not allowing duplicates
     sortdupes       Sorts library, allowing duplicates
     sortdelete      Sorts library, deleting duplicates
