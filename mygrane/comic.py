@@ -4,7 +4,6 @@ import shutil
 import zipfile
 
 from mygrane.preferences import *
-from unrar import rarfile
 
 
 # import gi
@@ -143,62 +142,3 @@ class Comic:
         except Exception:
             print("Unable to find year of publication")
 
-    def set_thumbnail(self):
-        coverimageloc = datadir + "/" + str(self.ident) + ".cover"
-        if os.path.isfile(coverimageloc):
-            try:
-                self.thumbnail = Pixbuf.new_from_file(coverimageloc)
-            except Exception:
-                pass
-            # Look for a thumbnail file already made
-        else:
-            try:
-                switch = self.extension
-                if switch in ("cbz", "zip"):
-                    self.set_thumbnail_from_zip()
-                elif switch in ("cbr", "zip"):
-                    self.set_thumbnail_from_rar()
-                    self.thumbnail.savev(coverimageloc, 'png', [None], [None])
-            except AttributeError:
-                print("That ain't a comic!")
-
-    def set_thumbnail_from_zip(self):
-        zf = zipfile.ZipFile(self.containing_directory + "/" + self.file)
-        for file_in_zip in zf.namelist()[:2]:
-            if ".jpg" in file_in_zip.lower() or ".png" in file_in_zip.lower():
-                # print("Found image: ", file_in_zip, " -- ")
-                cover = zf.read(file_in_zip)
-                zf.close()
-                return self.set_thumbnail_to_image(cover)
-            else:
-                pass
-                # print("First image not an image: " + file_in_zip)
-        return False
-
-    def set_thumbnail_from_rar(self):
-        rf = rarfile.RarFile(self.containing_directory + "/" + self.file)
-        for file_in_rar in sorted(rf.namelist())[:2]:
-            if ".jpg" in file_in_rar.lower() or ".png" in file_in_rar.lower():
-                # print("Found image: ", file_in_rar, " -- ")
-                cover = rf.read(file_in_rar)
-                return self.set_thumbnail_to_image(cover)
-            else:
-                pass
-                # print("First image not an image: " + file_in_rar)
-        return False
-
-    def set_thumbnail_to_image(self, image_to_use):
-        try:
-            loader = PixbufLoader()
-            loader.write(image_to_use)
-            loader.close()
-            thumbnail = loader.get_pixbuf()
-            h = thumbnail.get_height()
-            w = thumbnail.get_width()
-            r = h / w  # Preserve Aspect Ratio
-            pixbuf = Pixbuf.scale_simple(thumbnail, cover_width, cover_width * r, True)
-            self.thumbnail = pixbuf
-            return True
-        except Exception:
-            print(Exception)
-            return False
