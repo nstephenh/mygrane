@@ -3,20 +3,41 @@
 # Main controller for a mygrane instance
 import argparse
 
+import configparser
 import mygrane
 import mygrane.collection
 
 
 def main():
-    print("Starting instance of Mygrane")
     parser = argparse.ArgumentParser(description='Comic Library Manager')
     parser.add_argument("-l", help="Directory where comics are stored")
     parser.add_argument("--config", help="directory for config files")
+    parser.add_argument("--initdb", help="Initialize a database in the default directory")
+    parser.add_argument("--db", help="Alternate database location", type=str)
 
+    parser.add_argument("--importdir", help="Import all comics in a specified import directory (recursive)")
+    parser.add_argument("--mv", help="flag move all comics to specified directory", type=str)
+    parser.add_argument("--format", help="Specify format for names")
+
+    print("Starting instance of Mygrane")
+
+    args = parser.parse_args()
     # Load information from config file if not specified as arguments
     lib_loc = None
     library = None
 
+    #Init variables like db location
+    db = "./database.sqlite"
+    if args.db:
+        db = args.db
+
+    #Run selected command
+    if args.initdb:
+        pass
+    elif args.importdir:
+        pass
+    elif args.list:
+        pass
     # Run a loop of asking for commands and running them.
     end = False
     while (not end):
@@ -80,6 +101,7 @@ Available commands:
                     print(detail)
         except Exception as detail:
             print(detail)
+
 
 
 if __name__ == "__main__":

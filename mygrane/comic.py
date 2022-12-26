@@ -39,8 +39,6 @@ class Comic:
         self.isTPB = False
         self.tags = []
         self.set_info_from_name()
-        junk = self.title + str(self.issueNum) + str(self.pubyear) + self.containing_directory.split('/')[-1]
-        # self.ident = hashlib.md5(junk.encode()).hexdigest()
 
     def __str__(self):
         return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
@@ -55,8 +53,8 @@ class Comic:
         """
         olditemdir = self.containing_directory + "/"
         # if series:
-        # self.title = series.name
-        # self.containing_directory = series.file + "/"
+        #   self.title = series.name
+        #   self.containing_directory = series.file + "/"
         if dir_name:
             self.containing_directory = dir_name
         if (olditemdir == self.containing_directory):
@@ -128,12 +126,8 @@ class Comic:
 
                 try:
                     longname = " ".join(frontpart.split()[:-1])
-                    # left this in in case its important
-                    if re.match("v\d{1,2}", longname.split()[-1]):
-                        self.title = " ".join(longname.split()[:-1])
-                        print("its got a volume number")
-                    else:
-                        self.title = longname
+                    self.title = longname
+
                 except Exception:
                     print("File does not do something")
             except Exception as e:
@@ -142,3 +136,6 @@ class Comic:
         except Exception:
             print("Unable to find year of publication")
 
+
+    def add_to_db(self, dbcursor):
+        dbcursor.execute('ADD ')
