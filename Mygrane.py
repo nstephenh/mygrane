@@ -2,8 +2,8 @@
 
 # Main controller for a mygrane instance
 import argparse
-
 import configparser
+
 import mygrane
 import mygrane.collection
 
@@ -26,18 +26,15 @@ def main():
     lib_loc = None
     library = None
 
-    #Init variables like db location
+    # Init variables like db location
     db = "./database.sqlite"
     if args.db:
         db = args.db
 
-    #Run selected command
+    # Run selected command
     if args.initdb:
         pass
-    elif args.importdir:
-        pass
-    elif args.list:
-        pass
+
     # Run a loop of asking for commands and running them.
     end = False
     while (not end):
@@ -101,7 +98,6 @@ Available commands:
                     print(detail)
         except Exception as detail:
             print(detail)
-
 
 
 if __name__ == "__main__":

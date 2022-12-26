@@ -1,8 +1,9 @@
 import os
-from mygrane import preferences
-from mygrane.comic import Comic
 import re
 import sqlite3
+
+from mygrane import preferences
+from mygrane.comic import Comic
 
 plaintext = re.compile("[^0-9a-z]")
 andpersand = re.compile('and', flags=re.IGNORECASE)
@@ -77,7 +78,7 @@ class Series:
 
 
 class Collection:
-    def __init__(self, location="", dbfile = None, contains=[], flatten=False):
+    def __init__(self, location="", dbfile=None, contains=[], flatten=False):
         self.contains = []
         self.location = location + "/"
         self.dbfile = dbfile
