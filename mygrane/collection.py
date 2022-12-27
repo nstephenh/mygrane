@@ -1,6 +1,5 @@
 import os
 import re
-import sqlite3
 
 from mygrane import preferences
 from mygrane.comic import Comic
