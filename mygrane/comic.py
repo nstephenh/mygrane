@@ -12,7 +12,6 @@ class Comic:
     containing_directory - The location of the comic
     filename - the filename of the comic in containing_directory
     extension - the extension of the comic
-    thumbnail - a pixbuf of the first page of the comic
 
     pubyear - The year of publication of the comic, automatically determined by the last string in the filename matching
         the regex "[1-2][90]\d\d"
@@ -21,7 +20,6 @@ class Comic:
     """
 
     def __init__(self, containing_directory, filename):
-        self.thumbnail = None
         self.containing_directory = containing_directory
         self.symlink_location = None
         self.filename = filename

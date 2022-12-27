@@ -41,7 +41,9 @@ class Series:
             log(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
-        self.thumbnail = None
+
+    def __str__(self):
+        return "{} ({})".format(self.title, self.pubyear)
 
     def to_collection(self):
         return Collection(contains=self.contains)
@@ -95,7 +97,6 @@ class Collection:
                         item.encode("UTF-8")
                         log("Adding " + item + " To collection")
                         newcomic = Comic(location, item)
-                        # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
                         log("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
@@ -211,8 +212,7 @@ class Collection:
                                 item.move_file(series.location)
                                 # and append it to the collection
                                 series.contains.append(item)
-                                bar.write("Added " + item.title + " " + item.issueStr + " to " + contains[
-                                    candidate_index].name)
+                                bar.write("Added {} to {}".format(item, series))
                         # otherwise, it's the next issue
                         else:
                             # Since we're checking IssueStr, 1.MU will be dropped in the same folder as issue #1
@@ -221,7 +221,7 @@ class Collection:
                                 item.move_file(series.location)
                             # and append it to the collection
                             series.contains.append(item)
-                            bar.write("Added " + item.title + " " + item.issueStr + " to " + series.name)
+                            bar.write("Added {} to {}".format(item, series))
                         # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
                         found = True
@@ -230,7 +230,7 @@ class Collection:
                 candidate_index += 1
             if not found:
                 # If there is no existing series, create a new one
-                bar.write("Created new series for " + item.title)
+                bar.write("Created new series for {} ({})".format(item.title, item.filename))
                 if not test:
                     new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                     item.move_file(self.location + new_series_dir)
