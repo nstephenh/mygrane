@@ -8,4 +8,4 @@ use_symlinks = True
 
 verbose = False
 
-data_dir = "/home/nsh/.mygrane/"
+single_issues_get_series = True

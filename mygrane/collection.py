@@ -311,16 +311,18 @@ class Collection:
                     # ToDo: Add in the ability to update to existing series under certain circumstances
                     contains.append(Series(name=item.title, contents=[item]))
 
-        # If series only contains one item, make it a comic object
-        candidate_index = 0
-        for item in contains:
-            if type(item) is Series and len(item.contains) == 1:
-                if not test:
-                    # Move the filename out of empty the collection
-                    single = item.contains[0]
-                    single.move_file(self.location)
-                    series = single
-            candidate_index += 1
+        # Skip this if we are using symlinks since the symlink move code can't remove the existing symlink
+        if (not preferences.single_issues_get_series or preferences.use_symlinks):
+            # If series only contains one item, make it a comic object
+
+            candidate_index = 0
+            for item in contains:
+                if type(item) is Series and len(item.contains) == 1:
+                    if not test:
+                        # Move the filename out of empty the collection
+                        single = item.contains[0]
+                        single.move_file(self.location)
+                candidate_index += 1
 
         self.contains = contains
         self.contains.sort(key=lambda x: x.title)
