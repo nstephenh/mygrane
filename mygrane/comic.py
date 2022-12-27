@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import zipfile
 
 import mygrane.preferences as settings
 from log import log
@@ -41,7 +40,7 @@ class Comic:
 
     @property
     def source_path(self):
-        return self.containing_directory + "/" + self.filename
+        return os.path.join(self.containing_directory, self.filename)
 
     def move_file(self, dir_name=None):
 
@@ -53,7 +52,7 @@ class Comic:
         if old_dir == self.containing_directory:
             return True
 
-        new_path = dir_name + self.filename
+        new_path = os.path.join(dir_name, self.filename)
 
         if not os.path.isdir(dir_name):
             try:
