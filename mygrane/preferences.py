@@ -1,12 +1,9 @@
 window_width = 700
 cover_width = 300
 
-# library_directory = "/home/nsh/Documents/Comics/Test/"
-library_directory = "/home/nsh/Downloads/Star wars Comics"
+input_directory = "/home/nsh/Documents/Comics To Sort"
+library_directory = "/home/nsh/Documents/Comics Library (symlinks)"
 
-datadir = "/home/nsh/.mygrane/"
+use_symlinks = True
 
-viewers = ["evince"]
-current_viewer = ""
-
-preload_cover_images = False
+data_dir = "/home/nsh/.mygrane/"

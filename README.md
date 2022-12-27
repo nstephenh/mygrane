@@ -5,9 +5,8 @@ The current most useful feature is as a program to sort a directory of comics.
 
 ## DISCLAIMER: Mygrane is ABANDONWARE.
 
-There is a GO version in the other branch. I don't remember what state it's in.
-I haven't used mygrane in 4+ years, and I wasn't using this version when I was,
-instead using an even older version I knew was stable.
+Currently, I'm rewriting it to output symlinks, so the file sorting functions may be messed up.
+The sorting algorithm should still be good.
 
 Be careful with the sort, particularly sortdelete as there could be bugs that have unforseen consequences.
 I have updated this to python3 and added some documentation so it can be used.

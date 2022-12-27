@@ -22,7 +22,7 @@ def main():
     print("Starting instance of Mygrane")
 
     args = parser.parse_args()
-    # Load information from config file if not specified as arguments
+    # Load information from config filename if not specified as arguments
     lib_loc = None
     library = None
 

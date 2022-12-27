@@ -17,35 +17,30 @@ class Series:
         self.title = name  # for compatability with comic objects
         self.issue = -1
         self.contains = []
+        self.location = location
         # print(contents) # debug line
         if contents != []:
             self.contains = contents
-            self.file = self.contains[0].containing_directory  # Should be absolute...
-        else:
+            self.location = self.contains[0].containing_directory  # Should be absolute...
+        elif self.location != "":
             self.contains = []
             print("Initializing " + location)
-            for file in sorted(os.listdir(location)):
+            for file in sorted(os.listdir(series.location)):
                 print(file)
                 extension = (file.split(".")[-1])
                 if extension.lower() in ["cbr", "cbz", "rar", "zip", "pdf"]:
-                    issue = Comic(location, file)
-                    if preferences.preload_cover_images:
-                        issue.set_thumbnail()
+                    issue = Comic(series.location, file)
                     self.contains.append(issue)
-            self.file = location
-        # print(self.file) #Debug line
+        elif self.name != "":
+            self.location = os.path.join(preferences.library_directory, name)
+        # print(self.filename) #Debug line
         if name == "":
-            # print(self.file)
+            # print(self.filename)
             print(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
         self.thumbnail = None
         print()
-
-    def set_thumbnail(self):
-        self.contains[0].set_thumbnail()
-        self.thumbnail = self.contains[0].thumbnail
-        print("set series thumbnail to that of " + self.contains[0].file)
 
     def to_collection(self):
         return Collection(contains=self.contains)
@@ -78,25 +73,13 @@ class Series:
 
 
 class Collection:
-    def __init__(self, location="", dbfile=None, contains=[], flatten=False):
+    def __init__(self, location="", contains=[], flatten=False):
         self.contains = []
         self.location = location + "/"
-        self.dbfile = dbfile
 
-        if not (dbfile is None):
-            try:
-                self.conn = sqlite3.connect(dbfile)
-
-                self.nodb = False
-            except Exception:
-
-                print("Unable to access dbfile at %s", dbfile)
-                self.nodb = True
-        else:
-            self.nodb = True
         if location != "":
             print("Creating new collection")
-            for item in sorted(os.listdir(location)):
+            for item in sorted(os.listdir(series.location)):
                 sublocation = location + "/" + item
                 if os.path.isdir(sublocation):
                     # print(item)
@@ -110,20 +93,22 @@ class Collection:
                     try:
                         item.encode("UTF-8")
                         print("Adding " + item + " To collection")
-                        newcomic = Comic(location, item)
+                        newcomic = Comic(series.location, item)
                         # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
                         print("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
-
-        else:
+        elif len(contains) != 0:
             for item in contains:
-                if not preferences.preload_cover_images:
-                    print("Setting thumnail for " + item.file)
-                    item.set_thumbnail()
                 self.contains.append(item)
                 if self.location == "" and type(item) is Series:
-                    self.location = self.contains[0].file
+                    self.location = self.contains[0].filename
+        else:
+            self.location = preferences.library_directory
+            for root, _, filenames in os.walk(preferences.input_directory):
+                for filename in sorted(filenames):
+                    print(root + "/" + filename)
+                    self.contains.append(Comic(root, filename))
 
     def sort(self, test=True, allow_duplicates="False"):
         """
@@ -132,16 +117,16 @@ class Collection:
         :param allow_duplicates: "true" "false" or "delete". Delete will keep the copy with the highest filesize
         :return:
         """
-        temp_Contains = []  # This is what we will return
+        contains = []  # New contents
         sortme = []  # This is what we use as a temporary container.
-        special_second = []  # issues that might have come out after issue 1 go here. Any issue number less than 1
+        special_second = []  # Issues with strange numbers like #0 or 0.MU, that may have come out after issue 1.
 
         # The following handles comics with no issue number by skipping them for the sort
         for item in self.contains:
             if type(item) is Comic:
                 if item.issueNum is None:
                     # Trade Paperback or other item, has no issue number
-                    temp_Contains.append(item)
+                    contains.append(item)
                 elif item.issueNum < 1:
                     # 0 issue or 0.1 issue, will go through on secondary pass
                     special_second.append(item)
@@ -150,7 +135,7 @@ class Collection:
                     sortme.append(item)
             else:
                 # Series Objects
-                temp_Contains.append(item)
+                contains.append(item)
 
         # TODO: Make issue 1 come before issue 1.MU, etc....
 
@@ -161,176 +146,173 @@ class Collection:
 
         # sort each comic into its own series
         for item in sortme:
-            # removed type(comic) check from here since we're doing that earlier again
-            index = 0
+            # reset candidate index
+            candidate_index = 0
             found = False
-            while index < len(temp_Contains):
-                series = temp_Contains[index]
-                if type(series) is Series:
-                    lastissue = series.contains[-1]
+            # iterate over each existing issue and see if it is the same series
+            while candidate_index < len(contains):
+                candidate = contains[candidate_index]
+                if type(candidate) is Series:
+                    series = candidate
+                    last_issue = series.contains[-1]
                     # if the issue  we are looking at has a name close to the new comic
                     # and the publishing year is the same or the next year
                     # and the issue number is the next issue
                     # then append the issue to the series
                     # if series.name_close_enough(item.title):
                     #   print(item.title + '\t'
-                    #        + str((temp_Contains[index].contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
-                    #        + str((temp_Contains[index].contains[-1].issue - item.issue) == -1))
+                    #        + str((series.contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
+                    #        + str((series.contains[-1].issue - item.issue) == -1))
 
-                    # if the file name is close enough, and the comic was published in the same or next year,
+                    # if the filename name is close enough, and the comic was published in the same or next year,
                     # and the issue number is within 1 or the issue number and publication year is the same and
                     # allow_duplicates is not "false"
-                    if temp_Contains[index].name_close_enough(item.title) \
-                            and (item.pubyear - lastissue.pubyear) in [0, 1] \
-                            and ((0 < (item.issueNum - lastissue.issueNum) <= 1)
-                                 or (0 == (item.issueNum - lastissue.issueNum)
+                    if series.name_close_enough(item.title) \
+                            and (item.pubyear - last_issue.pubyear) in [0, 1] \
+                            and ((0 < (item.issueNum - last_issue.issueNum) <= 1)
+                                 or (0 == (item.issueNum - last_issue.issueNum)
                                      and (str.lower(allow_duplicates) != "false") and (
-                                             item.pubyear - lastissue.pubyear == 0))):
-                        # if the file is a duplicate: # Comparing issueStr instead of issueNum
-                        if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == lastissue.issueStr \
-                                                                         and (item.pubyear - lastissue.pubyear == 0))):
+                                             item.pubyear - last_issue.pubyear == 0))):
+                        # if the filename is a duplicate: # Comparing issueStr instead of issueNum
+                        if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == last_issue.issueStr \
+                                                                         and (item.pubyear - last_issue.pubyear == 0))):
                             # and the last issue is larger or the same size
-                            if lastissue.size >= item.size:
+                            if last_issue.size >= item.size:
                                 if not test:
-                                    # delete the file
-                                    os.remove(item.containing_directory + "/" + item.file)
+                                    # delete the filename
+                                    os.remove(item.containing_directory + "/" + item.filename)
                                 # And since we're not appending it to anything it will be thrown out with sortme
-                            # if the lastissue was smaller:
+                            # if the last_issue was smaller:
                             else:
                                 if not test:
                                     # delete the last issue
-                                    # print(lastissue.containing_directory)
-                                    # print(lastissue.file)
-                                    os.remove(lastissue.containing_directory + "/" + lastissue.file)
-                                    print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
-                                    # and move the file as one would normally
-                                    item.move_file(temp_Contains[index].file)
+                                    # print(last_issue.containing_directory)
+                                    # print(last_issue.filename)
+                                    os.remove(last_issue.containing_directory + "/" + last_issue.filename)
+                                    print("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
+                                    # and move the filename as one would normally
+                                    item.move_file(series.location)
                                 # and append it to the collection
-                                temp_Contains[index].contains.append(item)
-                                print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
-                                    index].name)
+                                series.contains.append(item)
+                                print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                    candidate_index].name)
                             pass
-                        # if the last file was not a duplicate
+                        # if the last filename was not a duplicate
                         else:
                             # Since we're checking IssueStr, 1.MU will be dropped in the same folder as issue #1
                             if not test:
-                                # move the file
-                                item.move_file(temp_Contains[index].file)
+                                # move the filename
+                                item.move_file(series.location)
                             # and append it to the collection
-                            temp_Contains[index].contains.append(item)
-                            print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
-                                index].name)
-                        # regardless of whether or not it was a duplicate
+                            series.contains.append(item)
+                            print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                candidate_index].name)
+                        # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
                         found = True
                         # stop the loop
                         break
-                index += 1
+                candidate_index += 1
             if not found:
                 # If there is no existing series, create a new one
                 print("Created new series for " + item.title)
                 if not test:
-                    try:
-                        createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                        item.move_file(self.location + createddir)
-                        temp_Contains.append(Series(name=item.title,
-                                                    location=self.location, contents=[item]))
-                    except os.error:
-                        print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
+                    new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
+                    item.move_file(self.location + new_series_dir)
+                    contains.append(Series(name=item.title,
+                                           location=self.location, contents=[item]))
                 else:
-                    temp_Contains.append(Series(name=item.title, contents=[item]))
+                    contains.append(Series(name=item.title, contents=[item]))
 
-        # temp_Contains is sorted by publishing year and then reversed, such that the latest series come first.
-        temp_Contains.sort(key=lambda x: x.pubyear)
-        temp_Contains.reverse()
+        # contains is sorted by publishing year and then reversed, such that the latest series come first.
+        contains.sort(key=lambda x: x.pubyear)
+        contains.reverse()
 
         # Sort all the special seconds
         for item in special_second:
-            index = 0
+            candidate_index = 0
             found = False
-            while index < len(temp_Contains):
-                series = temp_Contains[index]
+            while candidate_index < len(contains):
+                series = series
                 if type(series) is Series:
 
-                    # This is different than the above because we're just finding
+                    # This is different from the above because we're just finding
                     # the first series with the same name as the title that came before
-                    # This code relies on temp_Contains being sorted in reverse pubYear order
-                    if temp_Contains[index].name_close_enough(item.title) \
+                    # This code relies on contains being sorted in reverse pubYear order
+                    if series.name_close_enough(item.title) \
                             and ((item.pubyear >= series.pubyear)  # Check to see if this came out after the series
-                                 or (0 == (item.issueNum - lastissue.issueNum)
+                                 or (0 == (item.issueNum - last_issue.issueNum)
                                      and (str.lower(allow_duplicates) != "false") and (
-                                             item.pubyear - lastissue.pubyear == 0))):
-                        lastissue = series.contains[-1]  # We still need to get the last issue for duplicate check
+                                             item.pubyear - last_issue.pubyear == 0))):
+                        last_issue = series.contains[-1]  # We still need to get the last issue for duplicate check
                         # this is not the issue with the largest number, but the issue which was added to the array last
 
-                        # if the file is a duplicate: # Comparing issueStr instead of issueNum
-                        if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == lastissue.issueStr
-                                                                         and (item.pubyear - lastissue.pubyear == 0))):
+                        # if the filename is a duplicate: # Comparing issueStr instead of issueNum
+                        if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == last_issue.issueStr
+                                                                         and (item.pubyear - last_issue.pubyear == 0))):
                             # and the last issue is larger or the same size
-                            if lastissue.size >= item.size:
+                            if last_issue.size >= item.size:
                                 if not test:
-                                    # delete the file
-                                    os.remove(item.containing_directory + "/" + item.file)
+                                    # delete the filename
+                                    os.remove(item.containing_directory + "/" + item.filename)
                                 # And since we're not appending it to anything it will be thrown out with sortme
-                            # if the lastissue was smaller:
+                            # if the last_issue was smaller:
                             else:
                                 if not test:
                                     # delete the last issue
-                                    # print(lastissue.containing_directory)
-                                    # print(lastissue.file)
-                                    os.remove(lastissue.containing_directory + "/" + lastissue.file)
-                                    print("Deleted" + lastissue.title + " (" + lastissue.file + ")")
-                                    # and move the file as one would normally
-                                    item.move_file(temp_Contains[index].file)
+                                    # print(last_issue.containing_directory)
+                                    # print(last_issue.filename)
+                                    os.remove(last_issue.containing_directory + "/" + last_issue.filename)
+                                    print("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
+                                    # and move the filename as one would normally
+                                    item.move_file(series.location)
                                 # and append it to the collection
-                                temp_Contains[index].contains.append(item)
-                                print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
-                                    index].name)
+                                series.contains.append(item)
+                                print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                    candidate_index].name)
                             pass
-                        # if the last file was not a duplicate
+                        # if the last filename was not a duplicate
                         else:
                             if not test:
-                                # move the file
-                                item.move_file(temp_Contains[index].file)
+                                # move the filename
+                                item.move_file(series.location)
                             # and append it to the collection
-                            temp_Contains[index].contains.append(item)
-                            print("Added " + item.title + " " + item.issueStr + " to " + temp_Contains[
-                                index].name)
-                        # regardless of whether or not it was a duplicate
+                            series.contains.append(item)
+                            print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                candidate_index].name)
+                        # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
                         found = True
                         # stop the loop
                         break
-                index += 1
+                candidate_index += 1
             if not found:
                 # If there is no existing series, create a new one
                 print("Created new series for " + item.title)
                 if not test:
                     try:
-                        createddir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                        item.move_file(self.location + createddir)
-                        temp_Contains.append(Series(name=item.title,
-                                                    location=self.location, contents=[item]))
+                        new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
+                        item.move_file(self.location + new_series_dir)
+                        contains.append(Series(name=item.title,
+                                               location=self.location, contents=[item]))
                     except os.error:
                         print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
                     # ToDo: Add in the ability to update to existing series under certain circumstances
-                    temp_Contains.append(Series(name=item.title, contents=[item]))
+                    contains.append(Series(name=item.title, contents=[item]))
 
         # If series only contains one item, make it a comic object
-        index = 0
-        for item in temp_Contains:
+        candidate_index = 0
+        for item in contains:
             if type(item) is Series and len(item.contains) == 1:
-
                 if not test:
-                    # Move the file out of empty the collection
+                    # Move the filename out of empty the collection
                     single = item.contains[0]
-                    print(single.containing_directory)
                     single.move_file(self.location)
-                    temp_Contains[index] = single
-            index += 1
+                    series = single
+            candidate_index += 1
 
-        self.contains = temp_Contains
+        self.contains = contains
         self.contains.sort(key=lambda x: x.title)
 
     def __str__(self):

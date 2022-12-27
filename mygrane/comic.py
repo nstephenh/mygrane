@@ -3,20 +3,14 @@ import re
 import shutil
 import zipfile
 
-from mygrane.preferences import *
-
-
-# import gi
-# gi.require_version('Gtk', '3.0')
-# gi.require_version('GdkPixbuf', '2.0')
-# from gi.repository.GdkPixbuf import Pixbuf, PixbufLoader
+import mygrane.preferences as settings
 
 
 class Comic:
     """
     Object that represents a comic. Contains the following information
     containing_directory - The location of the comic
-    file - the filename of the comic in containing_directory
+    filename - the filename of the comic in containing_directory
     extension - the extension of the comic
     thumbnail - a pixbuf of the first page of the comic
 
@@ -26,12 +20,13 @@ class Comic:
     title - The title of the comic
     """
 
-    def __init__(self, containing_directory, file):
+    def __init__(self, containing_directory, filename):
         self.thumbnail = None
         self.containing_directory = containing_directory
-        self.file = file
-        self.extension = (file.split(".")[-1].lower)
-        self.size = os.path.getsize(containing_directory + "/" + file)
+        self.symlink_location = None
+        self.filename = filename
+        self.extension = filename.split(".")[-1].lower()
+        self.size = os.path.getsize(containing_directory + "/" + filename)
         self.pubyear = 0
         self.title = ""
         self.issueStr = None  # string
@@ -43,43 +38,56 @@ class Comic:
     def __str__(self):
         return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
 
+    @property
+    def source_path(self):
+        return self.containing_directory + "/" + self.filename
+
     def move_file(self, dir_name=None):
-        """
 
-        :param dir_name: moves the file to this directory (absolute path)
+        old_dir = self.containing_directory + "/"
+        old_path = self.source_path
 
-        :return: True if no errors thrown
-        a previous "series" parameter has been removed as it was not absolute
-        """
-        olditemdir = self.containing_directory + "/"
-        # if series:
-        #   self.title = series.name
-        #   self.containing_directory = series.file + "/"
         if dir_name:
             self.containing_directory = dir_name
-        if (olditemdir == self.containing_directory):
+        if old_dir == self.containing_directory:
             return True
-        print("Moving " + olditemdir + self.file + " to " + dir_name)
-        # print(olditemdir)
-        # print(self.containing_directory)
+
+        new_path = dir_name + self.filename
+
+        if not os.path.isdir(dir_name):
+            try:
+                os.mkdir(self.containing_directory)
+            except OSError as h:
+                print("Error, creating directory")
+                print(h)
+
+        if settings.use_symlinks:
+            print("Creating a symlink for {} from {} to {}".format(self.filename, old_dir, dir_name))
+            if os.path.exists(new_path):
+                os.unlink(new_path)
+                print("Cleared old symlink")
+
+            try:
+                os.symlink(old_path, new_path)
+                return True
+            except Exception as e:
+                print(e)
+                exit()
+            return False
+
+        print("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
 
         try:
-            shutil.move(olditemdir + "/" + self.file, self.containing_directory + "/" + self.file)
+            shutil.move(old_path, new_path)
             try:
-                os.rmdir(olditemdir)  # This is to remove empty directories
-                print("Removed empty directory for " + self.file)
+                os.rmdir(old_dir)  # This is to remove empty directories
+                print("Removed empty directory for " + self.filename)
             except os.error as g:
                 pass
             return True
         except OSError as e:
             try:
-                os.mkdir(self.containing_directory)
-            except OSError as h:
-                print("Error, directory already exists or")
-                print(h)
-            try:
-
-                shutil.move(olditemdir + "/" + self.file, self.containing_directory + "/" + self.file)
+                shutil.move(old_path, new_path)
                 return True
             except OSError as f:
                 print("Error, comic already exists in directory or")
@@ -87,12 +95,12 @@ class Comic:
                 return False
 
     def set_info_from_name(self):
-        self.tags = re.findall("\((.^)\)", self.file)
-        yearregex = re.compile("\(([1-2][90]\d\d)\)")
+        self.tags = re.findall("\((.^)\)", self.filename)
+        year_regex = re.compile("\(([1-2][90]\d\d)\)")
         try:
-            self.pubyear = int(yearregex.findall(self.file)[-1])
+            self.pubyear = int(year_regex.findall(self.filename)[-1])
             try:
-                frontpart = self.file.split('(')[0]
+                frontpart = self.filename.split('(')[0]
                 try:
                     # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
                     coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
@@ -135,7 +143,6 @@ class Comic:
                 print(e)
         except Exception:
             print("Unable to find year of publication")
-
 
     def add_to_db(self, dbcursor):
         dbcursor.execute('ADD ')
