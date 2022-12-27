@@ -106,10 +106,17 @@ class Collection:
                     self.location = self.contains[0].filename
         else:
             self.location = preferences.library_directory
+            total = 0
+            progress_bar = tqdm.tqdm(desc="Files scanned", total=100, unit="Files")
             for root, _, filenames in os.walk(preferences.input_directory):
+                total += len(filenames)
+                progress_bar.total = total
+                progress_bar.refresh()
                 for filename in sorted(filenames):
+                    progress_bar.update(1)
                     log(root + "/" + filename)
                     self.contains.append(Comic(root, filename))
+            progress_bar.close()
 
     def sort(self, test=True, allow_duplicates="False"):
         """
@@ -148,7 +155,7 @@ class Collection:
         special_second.sort(key=lambda x: x.issueNum)
 
         total = len(sortme)
-        bar = tqdm.tqdm(total=total, desc='Progress', position=0, unit="Comics")
+        bar = tqdm.tqdm(total=total, desc='Sorting', position=0, unit="Comics")
 
         # sort each comic into its own series
         for item in sortme:
