@@ -6,4 +6,6 @@ library_directory = "/home/nsh/Documents/Comics Library (symlinks)"
 
 use_symlinks = True
 
+verbose = False
+
 data_dir = "/home/nsh/.mygrane/"

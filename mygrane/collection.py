@@ -3,6 +3,7 @@ import re
 
 import tqdm
 
+from log import log
 from mygrane import preferences
 from mygrane.comic import Comic
 
@@ -19,29 +20,28 @@ class Series:
         self.issue = -1
         self.contains = []
         self.location = location
-        # print(contents) # debug line
+        # log(contents) # debug line
         if contents != []:
             self.contains = contents
             self.location = self.contains[0].containing_directory  # Should be absolute...
         elif self.location != "":
             self.contains = []
-            print("Initializing " + location)
+            log("Initializing " + location)
             for file in sorted(os.listdir(location)):
-                print(file)
+                log(file)
                 extension = (file.split(".")[-1])
                 if extension.lower() in ["cbr", "cbz", "rar", "zip", "pdf"]:
                     issue = Comic(location, file)
                     self.contains.append(issue)
         elif self.name != "":
             self.location = os.path.join(preferences.library_directory, name)
-        # print(self.filename) #Debug line
+        # log(self.filename) #Debug line
         if name == "":
-            # print(self.filename)
-            print(self.contains)
+            # log(self.filename)
+            log(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
         self.thumbnail = None
-        print()
 
     def to_collection(self):
         return Collection(contains=self.contains)
@@ -79,11 +79,11 @@ class Collection:
         self.location = location + "/"
 
         if location != "":
-            print("Creating new collection")
+            log("Creating new collection")
             for item in sorted(os.listdir(location)):
                 sublocation = location + "/" + item
                 if os.path.isdir(sublocation):
-                    # print(item)
+                    # log(item)
                     if flatten == False:
                         self.contains.append(Series(sublocation))
                     else:
@@ -93,12 +93,12 @@ class Collection:
                 else:
                     try:
                         item.encode("UTF-8")
-                        print("Adding " + item + " To collection")
+                        log("Adding " + item + " To collection")
                         newcomic = Comic(location, item)
                         # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
-                        print("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
+                        log("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
         elif len(contains) != 0:
             for item in contains:
                 self.contains.append(item)
@@ -108,7 +108,7 @@ class Collection:
             self.location = preferences.library_directory
             for root, _, filenames in os.walk(preferences.input_directory):
                 for filename in sorted(filenames):
-                    print(root + "/" + filename)
+                    log(root + "/" + filename)
                     self.contains.append(Comic(root, filename))
 
     def sort(self, test=True, allow_duplicates="False"):
@@ -166,7 +166,7 @@ class Collection:
                     # and the issue number is the next issue
                     # then append the issue to the series
                     # if series.name_close_enough(item.title):
-                    #   print(item.title + '\t'
+                    #   log(item.title + '\t'
                     #        + str((series.contains[-1].pubyear - item.pubyear) in [0, 1]) + '\t'
                     #        + str((series.contains[-1].issue - item.issue) == -1))
 
@@ -192,8 +192,8 @@ class Collection:
                             else:
                                 if not test:
                                     # delete the last issue
-                                    # print(last_issue.containing_directory)
-                                    # print(last_issue.filename)
+                                    # log(last_issue.containing_directory)
+                                    # log(last_issue.filename)
                                     os.remove(last_issue.containing_directory + "/" + last_issue.filename)
                                     bar.write("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
                                     # and move the filename as one would normally
@@ -229,7 +229,7 @@ class Collection:
                                            location=self.location, contents=[item]))
                 else:
                     contains.append(Series(name=item.title, contents=[item]))
-            print("\n")
+            log("\n")
             bar.update(1)
         bar.close()
 
@@ -269,15 +269,15 @@ class Collection:
                             else:
                                 if not test:
                                     # delete the last issue
-                                    # print(last_issue.containing_directory)
-                                    # print(last_issue.filename)
+                                    # log(last_issue.containing_directory)
+                                    # log(last_issue.filename)
                                     os.remove(last_issue.containing_directory + "/" + last_issue.filename)
-                                    print("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
+                                    log("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
                                     # and move the filename as one would normally
                                     item.move_file(series.location)
                                 # and append it to the collection
                                 series.contains.append(item)
-                                print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                log("Added " + item.title + " " + item.issueStr + " to " + contains[
                                     candidate_index].name)
                             pass
                         # if the last filename was not a duplicate
@@ -287,7 +287,7 @@ class Collection:
                                 item.move_file(series.location)
                             # and append it to the collection
                             series.contains.append(item)
-                            print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                            log("Added " + item.title + " " + item.issueStr + " to " + contains[
                                 candidate_index].name)
                         # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
@@ -297,7 +297,7 @@ class Collection:
                 candidate_index += 1
             if not found:
                 # If there is no existing series, create a new one
-                print("Created new series for " + item.title)
+                log("Created new series for " + item.title)
                 if not test:
                     try:
                         new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
@@ -305,7 +305,7 @@ class Collection:
                         contains.append(Series(name=item.title,
                                                location=self.location, contents=[item]))
                     except os.error:
-                        print("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
+                        log("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
                     # ToDo: Add in the ability to update to existing series under certain circumstances
                     contains.append(Series(name=item.title, contents=[item]))

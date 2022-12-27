@@ -4,6 +4,7 @@ import shutil
 import zipfile
 
 import mygrane.preferences as settings
+from log import log
 
 
 class Comic:
@@ -58,30 +59,30 @@ class Comic:
             try:
                 os.mkdir(self.containing_directory)
             except OSError as h:
-                print("Error, creating directory")
-                print(h)
+                log("Error creating directory")
+                log(h)
 
         if settings.use_symlinks:
-            print("Creating a symlink for {} from {} to {}".format(self.filename, old_dir, dir_name))
+            log("Creating a symlink for {} from {} to {}".format(self.filename, old_dir, dir_name))
             if os.path.exists(new_path):
                 os.unlink(new_path)
-                print("Cleared old symlink")
+                log("Cleared old symlink")
 
             try:
                 os.symlink(old_path, new_path)
                 return True
             except Exception as e:
-                print(e)
+                log(e)
                 exit()
             return False
 
-        print("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
+        log("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
 
         try:
             shutil.move(old_path, new_path)
             try:
                 os.rmdir(old_dir)  # This is to remove empty directories
-                print("Removed empty directory for " + self.filename)
+                log("Removed empty directory for " + self.filename)
             except os.error as g:
                 pass
             return True
@@ -90,8 +91,8 @@ class Comic:
                 shutil.move(old_path, new_path)
                 return True
             except OSError as f:
-                print("Error, comic already exists in directory or")
-                print(e)
+                log("Error, comic already exists in directory or")
+                log(e)
                 return False
 
     def set_info_from_name(self):
@@ -105,7 +106,7 @@ class Comic:
                     # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
                     coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
                 except Exception:
-                    print("Not using alt covers")
+                    log("Not using alt covers")
                     coversplit = frontpart
 
                 self.issueStr = re.sub("#", "", coversplit.split()[-1])  # Grab last substring before issue name
@@ -137,12 +138,12 @@ class Comic:
                     self.title = longname
 
                 except Exception:
-                    print("File does not do something")
+                    log("File does not do something")
             except Exception as e:
-                print("File does not have a parentheisis")
-                print(e)
+                log("File does not have a parentheisis")
+                log(e)
         except Exception:
-            print("Unable to find year of publication")
+            log("Unable to find year of publication")
 
     def add_to_db(self, dbcursor):
         dbcursor.execute('ADD ')
