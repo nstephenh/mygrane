@@ -179,40 +179,42 @@ class Collection:
                                  or (0 == (item.issueNum - last_issue.issueNum)
                                      and (str.lower(allow_duplicates) != "false") and (
                                              item.pubyear - last_issue.pubyear == 0))):
-                        # if the filename is a duplicate: # Comparing issueStr instead of issueNum
-                        if str.lower(allow_duplicates) == 'delete' and ((item.issueStr == last_issue.issueStr \
-                                                                         and (item.pubyear - last_issue.pubyear == 0))):
+                        log("Match found")
+                        # if we are deleting or using symlinks, and issue is the same, this is a duplicate to skip:
+                        if (str.lower(allow_duplicates) == 'delete' or preferences.use_symlinks) and (
+                                item.issueStr == last_issue.issueStr and (item.pubyear - last_issue.pubyear == 0)):
+                            log("Not transferring duplicate")
+
                             # and the last issue is larger or the same size
                             if last_issue.size >= item.size:
-                                if not test:
+                                if not test and str.lower(allow_duplicates) == 'delete':
                                     # delete the filename
                                     os.remove(item.containing_directory + "/" + item.filename)
-                                # And since we're not appending it to anything it will be thrown out with sortme
-                            # if the last_issue was smaller:
+                                    bar.write("Deleted" + item.title + " (" + item.filename + ")")
+
+                                # Not adding it to the new collection stops us from tracking it.
+                            # if the last_issue was smaller we will remove it and make a new issue
                             else:
-                                if not test:
+                                log("Removing old issue")
+                                if not test and str.lower(allow_duplicates) == 'delete':
                                     # delete the last issue
-                                    # log(last_issue.containing_directory)
-                                    # log(last_issue.filename)
                                     os.remove(last_issue.containing_directory + "/" + last_issue.filename)
                                     bar.write("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
-                                    # and move the filename as one would normally
-                                    item.move_file(series.location)
+                                # move the new file as one would normally
+                                item.move_file(series.location)
                                 # and append it to the collection
                                 series.contains.append(item)
                                 bar.write("Added " + item.title + " " + item.issueStr + " to " + contains[
                                     candidate_index].name)
-                            pass
-                        # if the last filename was not a duplicate
+                        # otherwise, it's the next issue
                         else:
                             # Since we're checking IssueStr, 1.MU will be dropped in the same folder as issue #1
                             if not test:
-                                # move the filename
+                                # move the file
                                 item.move_file(series.location)
                             # and append it to the collection
                             series.contains.append(item)
-                            bar.write("Added " + item.title + " " + item.issueStr + " to " + contains[
-                                candidate_index].name)
+                            bar.write("Added " + item.title + " " + item.issueStr + " to " + series.name)
                         # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
                         found = True
@@ -229,7 +231,6 @@ class Collection:
                                            location=self.location, contents=[item]))
                 else:
                     contains.append(Series(name=item.title, contents=[item]))
-            log("\n")
             bar.update(1)
         bar.close()
 
