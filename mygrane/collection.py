@@ -1,6 +1,8 @@
 import os
 import re
 
+import tqdm
+
 from mygrane import preferences
 from mygrane.comic import Comic
 
@@ -145,6 +147,9 @@ class Collection:
         sortme.sort(key=lambda x: x.issueNum)
         special_second.sort(key=lambda x: x.issueNum)
 
+        total = len(sortme)
+        bar = tqdm.tqdm(total=total, desc='Progress', position=0, unit="Comics")
+
         # sort each comic into its own series
         for item in sortme:
             # reset candidate index
@@ -190,12 +195,12 @@ class Collection:
                                     # print(last_issue.containing_directory)
                                     # print(last_issue.filename)
                                     os.remove(last_issue.containing_directory + "/" + last_issue.filename)
-                                    print("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
+                                    bar.write("Deleted" + last_issue.title + " (" + last_issue.filename + ")")
                                     # and move the filename as one would normally
                                     item.move_file(series.location)
                                 # and append it to the collection
                                 series.contains.append(item)
-                                print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                                bar.write("Added " + item.title + " " + item.issueStr + " to " + contains[
                                     candidate_index].name)
                             pass
                         # if the last filename was not a duplicate
@@ -206,7 +211,7 @@ class Collection:
                                 item.move_file(series.location)
                             # and append it to the collection
                             series.contains.append(item)
-                            print("Added " + item.title + " " + item.issueStr + " to " + contains[
+                            bar.write("Added " + item.title + " " + item.issueStr + " to " + contains[
                                 candidate_index].name)
                         # regardless of whether it was a duplicate
                         # setting found to true will let the next piece of code know not to create a new folder
@@ -216,7 +221,7 @@ class Collection:
                 candidate_index += 1
             if not found:
                 # If there is no existing series, create a new one
-                print("Created new series for " + item.title)
+                bar.write("Created new series for " + item.title)
                 if not test:
                     new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
                     item.move_file(self.location + new_series_dir)
@@ -224,6 +229,9 @@ class Collection:
                                            location=self.location, contents=[item]))
                 else:
                     contains.append(Series(name=item.title, contents=[item]))
+            print("\n")
+            bar.update(1)
+        bar.close()
 
         # contains is sorted by publishing year and then reversed, such that the latest series come first.
         contains.sort(key=lambda x: x.pubyear)
