@@ -24,11 +24,11 @@ class Series:
         elif self.location != "":
             self.contains = []
             print("Initializing " + location)
-            for file in sorted(os.listdir(series.location)):
+            for file in sorted(os.listdir(location)):
                 print(file)
                 extension = (file.split(".")[-1])
                 if extension.lower() in ["cbr", "cbz", "rar", "zip", "pdf"]:
-                    issue = Comic(series.location, file)
+                    issue = Comic(location, file)
                     self.contains.append(issue)
         elif self.name != "":
             self.location = os.path.join(preferences.library_directory, name)
@@ -78,7 +78,7 @@ class Collection:
 
         if location != "":
             print("Creating new collection")
-            for item in sorted(os.listdir(series.location)):
+            for item in sorted(os.listdir(location)):
                 sublocation = location + "/" + item
                 if os.path.isdir(sublocation):
                     # print(item)
@@ -92,7 +92,7 @@ class Collection:
                     try:
                         item.encode("UTF-8")
                         print("Adding " + item + " To collection")
-                        newcomic = Comic(series.location, item)
+                        newcomic = Comic(location, item)
                         # newcomic.set_thumbnail()
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
