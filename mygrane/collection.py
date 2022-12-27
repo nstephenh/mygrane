@@ -138,6 +138,8 @@ class Collection:
 
         # TODO: Make issue 1 come before issue 1.MU, etc....
 
+        sortme.sort(key=lambda x: x.title)  # sort by title for an order
+
         # presort sort to go by issue number
         sortme.sort(key=lambda x: x.issueStr)  # hopefully fixes above todo^
         sortme.sort(key=lambda x: x.issueNum)
