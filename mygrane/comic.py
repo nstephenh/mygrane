@@ -21,7 +21,7 @@ class Comic:
 
     def __init__(self, containing_directory, filename):
         self.containing_directory = containing_directory
-        self.symlink_location = None
+        self.link_path = None
         self.filename = filename
         self.extension = filename.split(".")[-1].lower()
         self.size = os.path.getsize(containing_directory + "/" + filename)
@@ -61,9 +61,12 @@ class Comic:
 
         if settings.use_links:
             log("Creating a link for {} from {} to {}".format(self.filename, old_dir, dir_name))
+            if self.link_path and os.path.exists(self.link_path):
+                os.unlink(self.link_path)
+                self.link_path = None
+
             if os.path.exists(new_path):
                 os.unlink(new_path)
-                log("Cleared old symlink")
 
             try:
                 if settings.hardlink:
@@ -74,7 +77,6 @@ class Comic:
             except Exception as e:
                 log(e)
                 exit()
-            return False
 
         log("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
 

@@ -118,6 +118,28 @@ class Collection:
                     log(root + "/" + filename)
                     self.contains.append(Comic(root, filename))
             progress_bar.close()
+            if preferences.use_links:
+                # Find existing links to files in the library
+                progress_bar = tqdm.tqdm(desc="Checking existing library", total=total, unit="Files")
+                for root, _, filenames in os.walk(preferences.library_directory):
+                    for filename in sorted(filenames):
+                        progress_bar.update(1)
+                        path = root + "/" + filename
+                        log(path)
+                        comic = next(comic for comic in self.contains if comic.filename == filename)
+                        comic.link_path = path
+                progress_bar.close()
+
+                # Test that these symlinks were found and saved on the objects properly:
+                total_links = 0
+                progress_bar = tqdm.tqdm(desc="Counting Links", total=total, unit="Files")
+                for comic in self.contains:
+                    if comic.link_path is not None:
+                        total_links += 1
+                        progress_bar.update(1)
+                progress_bar.close()
+                print("Total links {} of {}".format(total_links, total))
+                exit()  # Early quit for testing
 
     def sort(self, test=True, allow_duplicates="False"):
         """
