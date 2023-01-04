@@ -188,8 +188,8 @@ class Collection:
                                      and (str.lower(allow_duplicates) != "false") and (
                                              item.pubyear - last_issue.pubyear == 0))):
                         log("Match found")
-                        # if we are deleting or using symlinks, and issue is the same, this is a duplicate to skip:
-                        if (str.lower(allow_duplicates) == 'delete' or preferences.use_symlinks) and (
+                        # if we are deleting or using links, and issue is the same, this is a duplicate to skip:
+                        if (str.lower(allow_duplicates) == 'delete' or preferences.use_links) and (
                                 item.issueStr == last_issue.issueStr and (item.pubyear - last_issue.pubyear == 0)):
                             log("Not transferring duplicate")
 
@@ -319,7 +319,7 @@ class Collection:
                     contains.append(Series(name=item.title, contents=[item]))
 
         # Skip this if we are using symlinks since the symlink move code can't remove the existing symlink
-        if (not preferences.single_issues_get_series or preferences.use_symlinks):
+        if not preferences.single_issues_get_series or preferences.use_links:
             # If series only contains one item, make it a comic object
 
             candidate_index = 0

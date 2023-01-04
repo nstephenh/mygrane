@@ -59,14 +59,17 @@ class Comic:
                 log("Error creating directory")
                 log(h)
 
-        if settings.use_symlinks:
-            log("Creating a symlink for {} from {} to {}".format(self.filename, old_dir, dir_name))
+        if settings.use_links:
+            log("Creating a link for {} from {} to {}".format(self.filename, old_dir, dir_name))
             if os.path.exists(new_path):
                 os.unlink(new_path)
                 log("Cleared old symlink")
 
             try:
-                os.symlink(old_path, new_path)
+                if settings.hardlink:
+                    os.link(old_path, new_path)
+                else:
+                    os.symlink(old_path, new_path)
                 return True
             except Exception as e:
                 log(e)
