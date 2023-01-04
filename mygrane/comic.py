@@ -67,7 +67,7 @@ class Comic:
 
             if os.path.exists(new_path):
                 os.unlink(new_path)
-
+            self.link_path = new_path
             try:
                 if settings.hardlink:
                     os.link(old_path, new_path)

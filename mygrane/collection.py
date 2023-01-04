@@ -139,7 +139,6 @@ class Collection:
                         progress_bar.update(1)
                 progress_bar.close()
                 print("Total links {} of {}".format(total_links, total))
-                exit()  # Early quit for testing
 
     def sort(self, test=True, allow_duplicates="False"):
         """
