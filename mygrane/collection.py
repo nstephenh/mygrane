@@ -126,8 +126,9 @@ class Collection:
                         progress_bar.update(1)
                         path = root + "/" + filename
                         log(path)
-                        comic = next(comic for comic in self.contains if comic.filename == filename)
-                        comic.link_path = path
+                        comic = next((comic for comic in self.contains if comic.filename == filename), None)
+                        if comic is not None:
+                            comic.link_path = path
                 progress_bar.close()
 
                 # Test that these symlinks were found and saved on the objects properly:
