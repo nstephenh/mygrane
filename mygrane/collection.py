@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -76,7 +77,8 @@ class Series:
 
 
 class Collection:
-    def __init__(self, location="", contains=[], flatten=False):
+    def __init__(self, location="", contains=None, flatten=False):
+
         self.contains = []
         self.location = location + "/"
 
@@ -100,24 +102,41 @@ class Collection:
                         self.contains.append(newcomic)
                     except UnicodeEncodeError as ude:
                         log("Error adding item: " + sublocation.encode('utf-8', 'ignore').decode('utf-8'))
-        elif len(contains) != 0:
+        elif contains is not None and len(contains) != 0:
             for item in contains:
                 self.contains.append(item)
                 if self.location == "" and type(item) is Series:
                     self.location = self.contains[0].filename
         else:
             self.location = preferences.library_directory
+            info = {}  # info is a dict with information about previous runs we cna read/write
+
             total = 0
-            progress_bar = tqdm.tqdm(desc="Files scanned", total=100, unit="Files")
+            new_total = 0
+
+            try:
+                with open("info.json", "r") as fp:
+                    info = json.load(fp)
+                total = info["collections"][self.location]["total_files"]
+            except FileNotFoundError:
+                pass
+            except KeyError:
+                info = {"collections": {self.location: {}}}
+
+            progress_bar = tqdm.tqdm(desc="Files scanned", total=total, unit="Files")
             for root, _, filenames in os.walk(preferences.input_directory):
-                total += len(filenames)
-                progress_bar.total = total
+                new_total += len(filenames)
+                if new_total > progress_bar.total:
+                    progress_bar.total = new_total
                 progress_bar.refresh()
                 for filename in sorted(filenames):
                     progress_bar.update(1)
                     log(root + "/" + filename)
                     self.contains.append(Comic(root, filename))
+            info["collections"][self.location]["total_files"] = progress_bar.total
             progress_bar.close()
+            with open("info.json", "w") as fp:
+                json.dump(info, fp)
             if preferences.use_links:
                 # Find existing links to files in the library
                 progress_bar = tqdm.tqdm(desc="Checking existing library", total=total, unit="Files")
