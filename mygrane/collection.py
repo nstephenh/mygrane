@@ -133,8 +133,10 @@ class Collection:
                     progress_bar.update(1)
                     log(root + "/" + filename)
                     self.contains.append(Comic(root, filename))
-            info["collections"][self.location]["total_files"] = progress_bar.total
+            total = progress_bar.total
             progress_bar.close()
+            info["collections"][self.location]["total_files"] = total
+
             with open("info.json", "w") as fp:
                 json.dump(info, fp)
             if preferences.use_links:
