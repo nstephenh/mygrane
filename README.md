@@ -8,8 +8,8 @@ The current most useful feature is as a program to sort a directory of comics.
 Currently, I'm rewriting it to output symlinks, so the file sorting functions may be messed up.
 The sorting algorithm should still be good.
 
-Be careful with the sort, particularly sortdelete as there could be bugs that have unforseen consequences.
-I have updated this to python3 and added some documentation so it can be used.
+Be careful with the sort, particularly "sortdelete" as there could be bugs that have unforeseen consequences.
+I have updated this to python3 and added some documentation, so it can be used.
 
 # Comic Naming Convention
 
@@ -75,13 +75,13 @@ and then pipe the results of the script to a program such as less or more.
 
 # How the sorting algorithm works
 
-First, the program seperates all current objects between comics and series.
+First, the program separates all current objects between comics and series.
 All the series objects are added to the new collection, while comics are added to a temporary collection for sorting.
 The new collection is sorted by issue number.
 The program checks each issue in the temporary collection against all the existing series and determines if meets the
-following crieteria:
+following criteria:
 
-* The title is approximatly the same (ignoring changes in capitalization and punctuation)
+* The title is approximately the same (ignoring changes in capitalization and punctuation)
 * The last issue in the series has the previous issue number (ex, issue
 * The last issue in the series was published before the checked issue
   If either criteria isn't met, then a new series is made for the issue in question.
