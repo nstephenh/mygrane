@@ -109,8 +109,7 @@ class Collection:
                     self.location = self.contains[0].filename
         else:
             self.location = preferences.library_directory
-            info = {}  # info is a dict with information about previous runs we cna read/write
-
+            info = {"collections": {self.location: {}}}
             total = 0
             new_total = 0
 
