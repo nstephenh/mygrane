@@ -144,7 +144,7 @@ class Collection:
                 for root, _, filenames in os.walk(preferences.library_directory):
                     for filename in sorted(filenames):
                         progress_bar.update(1)
-                        path = root + "/" + filename
+                        path = os.path.join(root, filename)
                         log(path)
                         comic = next((comic for comic in self.contains if comic.filename == filename), None)
                         if comic is not None:

@@ -75,7 +75,7 @@ class Comic:
                     os.symlink(old_path, new_path)
                 return True
             except Exception as e:
-                log(e)
+                log(str(e))
                 exit()
 
         log("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
