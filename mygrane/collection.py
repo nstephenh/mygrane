@@ -22,7 +22,7 @@ class Series:
         self.contains = []
         self.location = location
         # log(contents) # debug line
-        if contents != []:
+        if contents:
             self.contains = contents
             self.location = self.contains[0].containing_directory  # Should be absolute...
         elif self.location != "":
@@ -36,10 +36,7 @@ class Series:
                     self.contains.append(issue)
         elif self.name != "":
             self.location = os.path.join(preferences.library_directory, name)
-        # log(self.filename) #Debug line
         if name == "":
-            # log(self.filename)
-            log(self.contains)
             self.name = self.contains[0].title
         self.pubyear = self.contains[0].pubyear
 
