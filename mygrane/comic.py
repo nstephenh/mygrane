@@ -1,3 +1,4 @@
+import inspect
 import os
 import re
 import shutil
@@ -24,7 +25,7 @@ class Comic:
         self.link_path = None
         self.filename = filename
         self.extension = filename.split(".")[-1].lower()
-        self.size = os.path.getsize(containing_directory + "/" + filename)
+        self.size = os.path.getsize(self.source_path)
         self.pubyear = 0
         self.title = ""
         self.issueStr = None  # string
@@ -35,6 +36,18 @@ class Comic:
 
     def __str__(self):
         return self.title + " " + str(self.issueStr) + " (" + str(self.pubyear) + ")"
+
+    def to_json(self):
+        return {
+            "filename": self.filename,
+            "containing_directory": self.containing_directory,
+            "link_path": self.link_path,
+            "size": self.size,
+            "pubyear": self.pubyear,
+            "title": self.title,
+            "issueStr": self.issueStr,
+            "issueNum": self.issueNum,
+        }
 
     @property
     def source_path(self):
@@ -47,7 +60,8 @@ class Comic:
 
         if dir_name and not settings.use_links:
             self.containing_directory = dir_name
-        if old_dir == self.containing_directory:
+
+        if os.path.samefile(old_dir, self.containing_directory):
             return True
 
         new_path = os.path.join(dir_name, self.filename)

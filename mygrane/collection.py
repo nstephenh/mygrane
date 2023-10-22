@@ -43,8 +43,12 @@ class Series:
     def __str__(self):
         return "{} ({})".format(self.title, self.pubyear)
 
-    def to_collection(self):
-        return Collection(contains=self.contains)
+    def to_json(self):
+        return {
+            "name": self.name,
+            "location": self.location,
+            "contents": [item.to_json() for item in self.contains],
+        }
 
     def name_close_enough(self, theirs):
         oursbase = self.name
@@ -113,12 +117,11 @@ class Collection:
             try:
                 with open("info.json", "r") as fp:
                     info = json.load(fp)
-                total = info["collections"][self.location]["total_files"]
-            except FileNotFoundError:
-                pass
+                total = info["total"]
             except KeyError:
-                info = {"collections": {self.location: {}}}
-
+                log("info.json is corrupted or outdated")
+            except Exception:
+                log("Could not read info.json")
             progress_bar = tqdm.tqdm(desc="Files scanned", total=total, unit="Files")
             for root, _, filenames in os.walk(preferences.input_directory):
                 new_total += len(filenames)
@@ -131,10 +134,7 @@ class Collection:
                     self.contains.append(Comic(root, filename))
             total = progress_bar.total
             progress_bar.close()
-            info["collections"][self.location]["total_files"] = total
-
-            with open("info.json", "w") as fp:
-                json.dump(info, fp)
+            self.total = total
             if preferences.use_links:
                 # Find existing links to files in the library
                 progress_bar = tqdm.tqdm(desc="Checking existing library", total=total, unit="Files")
@@ -157,6 +157,18 @@ class Collection:
                         progress_bar.update(1)
                 progress_bar.close()
                 print("Total links {} of {}".format(total_links, total))
+
+    def to_json(self):
+        return {
+            "location": self.location,
+            "total": self.total,
+            "contents": [item.to_json() for item in self.contains],
+        }
+
+    def write_info_file(self):
+        print("Writing info.json")
+        with open("info.json", "w") as fp:
+            json.dump(self.to_json(), fp)
 
     def sort(self, test=True, allow_duplicates="False"):
         """
@@ -289,7 +301,7 @@ class Collection:
             candidate_index = 0
             found = False
             while candidate_index < len(contains):
-                series = series
+                series = series  # TODO: Is this doing anything?
                 if type(series) is Series:
 
                     # This is different from the above because we're just finding
@@ -348,9 +360,8 @@ class Collection:
                 if not test:
                     try:
                         new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                        item.move_file(self.location + new_series_dir)
-                        contains.append(Series(name=item.title,
-                                               location=self.location, contents=[item]))
+                        item.move_file(os.path.join(self.location, ))
+                        contains.append(Series(name=item.title, contents=[item]))
                     except os.error:
                         log("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
@@ -358,9 +369,8 @@ class Collection:
                     contains.append(Series(name=item.title, contents=[item]))
 
         # Skip this if we are using symlinks since the symlink move code can't remove the existing symlink
-        if not preferences.single_issues_get_series or preferences.use_links:
+        if (not preferences.single_issues_get_series) or preferences.use_links:
             # If series only contains one item, make it a comic object
-
             candidate_index = 0
             for item in contains:
                 if type(item) is Series and len(item.contains) == 1:

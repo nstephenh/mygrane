@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 input_directory = os.getenv("INPUT_DIRECTORY")
 library_directory = os.getenv("LIBRARY_DIRECTORY")
 
