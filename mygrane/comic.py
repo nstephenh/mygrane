@@ -45,7 +45,7 @@ class Comic:
         old_dir = self.containing_directory + "/"
         old_path = self.source_path
 
-        if dir_name:
+        if dir_name and not settings.use_links:
             self.containing_directory = dir_name
         if old_dir == self.containing_directory:
             return True
@@ -57,7 +57,7 @@ class Comic:
                 os.mkdir(self.containing_directory)
             except OSError as h:
                 log("Error creating directory")
-                log(h)
+                log(str(h))
 
         if settings.use_links:
             log("Creating a link for {} from {} to {}".format(self.filename, old_dir, dir_name))
@@ -76,7 +76,7 @@ class Comic:
                 return True
             except Exception as e:
                 log(str(e))
-                exit()
+                raise e
 
         log("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
 
