@@ -50,6 +50,12 @@ class Series:
             "contents": [item.to_json() for item in self.contains],
         }
 
+    def index_json(self, links=False):
+        comics_index_dict = {}
+        for item in self.contains:
+            comics_index_dict.update(item.index_json(links=links))
+        return comics_index_dict
+
     def name_close_enough(self, theirs):
         oursbase = self.name
         theirsbase = theirs
@@ -165,10 +171,24 @@ class Collection:
             "contents": [item.to_json() for item in self.contains],
         }
 
+    def index_json(self, links=False):
+        comics_index_dict = {}
+        for item in self.contains:
+            comics_index_dict.update(item.index_json(links=links))
+        return comics_index_dict
+
     def write_info_file(self):
         print("Writing info.json")
         with open("info.json", "w") as fp:
             json.dump(self.to_json(), fp)
+
+    def write_indexes(self):
+        print("Writing indexes")
+        with open("index_comics.json", "w") as fp:
+            json.dump(self.index_json(), fp)
+        if preferences.use_links:
+            with open("index_links.json", "w") as fp:
+                json.dump(self.index_json(links=True), fp)
 
     def sort(self, test=True, allow_duplicates="False"):
         """
@@ -211,6 +231,7 @@ class Collection:
 
         # sort each comic into its own series
         for item in sortme:
+            log(f"Sorting {item}")
             # reset candidate index
             candidate_index = 0
             found = False
@@ -242,7 +263,7 @@ class Collection:
                         # if we are deleting or using links, and issue is the same, this is a duplicate to skip:
                         if (str.lower(allow_duplicates) == 'delete' or preferences.use_links) and (
                                 item.issueStr == last_issue.issueStr and (item.pubyear - last_issue.pubyear == 0)):
-                            log("Not transferring duplicate")
+                            log("Not adding duplicate to collection")
 
                             # and the last issue is larger or the same size
                             if last_issue.size >= item.size:

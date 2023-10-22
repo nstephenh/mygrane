@@ -1,4 +1,3 @@
-import inspect
 import os
 import re
 import shutil
@@ -49,67 +48,90 @@ class Comic:
             "issueNum": self.issueNum,
         }
 
+    def index_json(self, links=False):
+        if not links:
+            return {
+                self.source_path: self.to_json()
+            }
+        if links:
+            return {
+                self.link_path: self.source_path
+            }
+
     @property
     def source_path(self):
         return os.path.join(self.containing_directory, self.filename)
 
-    def move_file(self, dir_name=None):
+    def move_file(self, new_dir):
 
         old_dir = self.containing_directory + "/"
         old_path = self.source_path
 
-        if dir_name and not settings.use_links:
-            self.containing_directory = dir_name
+        log_verb = "move"
+        if settings.use_links:
+            log_verb = "link"
+        else:
+            self.containing_directory = new_dir
 
-        if os.path.samefile(old_dir, self.containing_directory):
+        log(f"Attempting to {log_verb} '{self.filename}' from '{old_dir}' to '{new_dir}'")
+        if os.path.dirname(old_path) == os.path.dirname(new_dir):
             return True
 
-        new_path = os.path.join(dir_name, self.filename)
-
-        if not os.path.isdir(dir_name):
+        if not os.path.isdir(new_dir):
             try:
-                os.mkdir(self.containing_directory)
+                os.mkdir(new_dir)
             except OSError as h:
                 log("Error creating directory")
                 log(str(h))
+                raise h
+        if os.path.samefile(old_dir, new_dir):
+            return True
+
+        new_path = os.path.join(new_dir, self.filename)
 
         if settings.use_links:
-            log("Creating a link for {} from {} to {}".format(self.filename, old_dir, dir_name))
+            log(f"\tCreating a link for '{self.filename}' from '{old_dir}' to '{new_dir}'")
+            # Clear old links first:
             if self.link_path and os.path.exists(self.link_path):
+                log(f"\tRemoved old link a link for '{self.filename}' from '{old_dir}' to '{self.link_path}'")
+
                 os.unlink(self.link_path)
                 self.link_path = None
-
             if os.path.exists(new_path):
                 os.unlink(new_path)
+
             self.link_path = new_path
+
             try:
                 if settings.hardlink:
                     os.link(old_path, new_path)
                 else:
                     os.symlink(old_path, new_path)
+                log(f"\tCreated a link for '{self.filename}' from '{old_dir}' to '{new_dir}'")
                 return True
             except Exception as e:
-                log(str(e))
+                log(f"\t{str(e)}")
                 raise e
+        else:
 
-        log("Moving {} from {} to {}".format(self.filename, old_dir, dir_name))
+            log("\tMoving {} from {} to {}".format(self.filename, old_dir, new_dir))
 
-        try:
-            shutil.move(old_path, new_path)
-            try:
-                os.rmdir(old_dir)  # This is to remove empty directories
-                log("Removed empty directory for " + self.filename)
-            except os.error as g:
-                pass
-            return True
-        except OSError as e:
             try:
                 shutil.move(old_path, new_path)
+                try:
+                    os.rmdir(old_dir)  # This is to remove empty directories
+                    log("\tRemoved empty directory for " + self.filename)
+                except os.error as e:
+                    pass
                 return True
-            except OSError as f:
-                log("Error, comic already exists in directory or")
-                log(e)
-                return False
+            except OSError as e:
+                try:
+                    shutil.move(old_path, new_path)
+                    return True
+                except OSError as f:
+                    log("\tError, comic already exists in directory or")
+                    log(f"\t{str(e)}")
+                    return False
 
     def set_info_from_name(self):
         self.tags = re.findall("\((.^)\)", self.filename)

@@ -7,5 +7,5 @@ config/
 test.py
 *.pyc
 venv/
-/info.json
+/*.json
 /.env

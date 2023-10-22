@@ -8,3 +8,4 @@ if preferences.input_directory is None:
 stuff = Collection()
 stuff.sort(test=False, allow_duplicates="True")
 stuff.write_info_file()
+stuff.write_indexes()
