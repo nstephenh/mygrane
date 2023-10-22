@@ -13,7 +13,7 @@ if __name__ == "__main__":
         index_links = json.load(fp)
 
         for link_path in index_links.keys():
-            if link_path is None or link_path is "null":
+            if link_path is None or link_path == "null":
                 continue  # skip null case
             print(f"Removing {link_path}")
             os.unlink(link_path)
