@@ -1,6 +1,7 @@
+import os
 
-input_directory = "/home/nsh/Documents/Comics To Sort"
-library_directory = "/home/nsh/Documents/Comics Library (symlinks)"
+input_directory = os.getenv("INPUT_DIRECTORY")
+library_directory = os.getenv("LIBRARY_DIRECTORY")
 
 use_links = True
 hardlink = True  # Use Hardlinks by default, switch to symlinks if false

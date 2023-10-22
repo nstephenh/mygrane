@@ -8,3 +8,4 @@ test.py
 *.pyc
 venv/
 /info.json
+/.env
