@@ -381,8 +381,9 @@ class Collection:
                 if not test:
                     try:
                         new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                        item.move_file(os.path.join(self.location, new_series_dir))
-                        contains.append(Series(name=item.title, contents=[item]))
+                        new_series_location = os.path.join(self.location, new_series_dir)
+                        item.move_file(new_series_location)
+                        contains.append(Series(name=item.title, contents=[item], location=new_series_location))
                     except os.error:
                         log("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
