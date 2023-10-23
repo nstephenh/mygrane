@@ -16,5 +16,8 @@ if __name__ == "__main__":
             if link_path is None or link_path == "null":
                 continue  # skip null case
             print(f"Removing {link_path}")
-            os.unlink(link_path)
+            try:
+                os.unlink(link_path)
+            except Exception as e:
+                print("\tFile was not there!")
     os.remove("../index_links.json")
