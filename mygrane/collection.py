@@ -324,9 +324,10 @@ class Collection:
             candidate_index = 0
             found = False
             while candidate_index < len(contains):
-                series = series  # TODO: Is this doing anything?
-                if type(series) is Series:
-
+                candidate = contains[candidate_index]
+                if type(candidate) is Series:
+                    series = candidate
+                    last_issue = series.contains[-1]
                     # This is different from the above because we're just finding
                     # the first series with the same name as the title that came before
                     # This code relies on contains being sorted in reverse pubYear order
