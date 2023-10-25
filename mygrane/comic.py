@@ -62,7 +62,7 @@ class Comic:
     def source_path(self):
         return os.path.join(self.containing_directory, self.filename)
 
-    def move_file(self, new_dir):
+    def move_file(self, new_dir: str):
 
         old_dir = self.containing_directory + "/"
         old_path = self.source_path
@@ -74,7 +74,7 @@ class Comic:
             self.containing_directory = new_dir
 
         log(f"Attempting to {log_verb} '{self.filename}' from '{old_dir}' to '{new_dir}'")
-        if os.path.dirname(old_path) == os.path.dirname(new_dir):
+        if os.path.dirname(old_path) == os.path.dirname(self.containing_directory):
             return True
 
         if not os.path.isdir(new_dir):

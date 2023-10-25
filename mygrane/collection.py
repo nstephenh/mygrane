@@ -304,10 +304,12 @@ class Collection:
                 # If there is no existing series, create a new one
                 bar.write("Created new series for {} ({})".format(item.title, item.filename))
                 if not test:
-                    new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
-                    item.move_file(self.location + new_series_dir)
+                    new_series_dir = item.title + " (" + str(item.pubyear) + ")" + "/"
+                    new_series_location = os.path.join(self.location, new_series_dir)
+                    item.move_file(new_series_location)
                     contains.append(Series(name=item.title,
-                                           location=self.location, contents=[item]))
+                                           location=new_series_location,
+                                           contents=[item]))
                 else:
                     contains.append(Series(name=item.title, contents=[item]))
             bar.update(1)
@@ -380,10 +382,12 @@ class Collection:
                 log("Created new series for " + item.title)
                 if not test:
                     try:
-                        new_series_dir = "/" + item.title + " (" + str(item.pubyear) + ")" + "/"
+                        new_series_dir = item.title + " (" + str(item.pubyear) + ")" + "/"
                         new_series_location = os.path.join(self.location, new_series_dir)
                         item.move_file(new_series_location)
-                        contains.append(Series(name=item.title, contents=[item], location=new_series_location))
+                        contains.append(Series(name=item.title,
+                                               location=new_series_location,
+                                               contents=[item]))
                     except os.error:
                         log("Directory already exists: " + item.title + " (" + str(item.pubyear) + ")")
                 else:
