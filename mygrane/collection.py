@@ -21,10 +21,10 @@ class Series:
         self.issue = -1
         self.contains = []
         self.location = location
-        # log(contents) # debug line
         if contents:
             self.contains = contents
-            self.location = self.contains[0].containing_directory  # Should be absolute...
+            if not location:
+                self.location = self.contains[0].containing_directory  # Should be absolute...
         elif self.location != "":
             self.contains = []
             log("Initializing " + location)
