@@ -171,6 +171,9 @@ class Collection:
             "contents": [item.to_json() for item in self.contains],
         }
 
+    def oneshot_location(self):
+        return os.path.join(self.location, "_oneshots")
+
     def index_json(self, links=False):
         comics_index_dict = {}
         for item in self.contains:
@@ -404,7 +407,7 @@ class Collection:
                     if not test:
                         # Move the filename out of empty the collection
                         single = item.contains[0]
-                        single.move_file(self.location)
+                        single.move_file(self.oneshot_location())
                 candidate_index += 1
 
         self.contains = contains
