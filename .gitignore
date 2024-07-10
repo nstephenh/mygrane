@@ -9,3 +9,5 @@ test.py
 venv/
 /*.json
 /.env
+
+komga_api_client/
