@@ -110,8 +110,7 @@ class Comic:
                 log(f"\tCreated a link for '{self.filename}' from '{old_dir}' to '{new_dir}'")
                 return True
             except Exception as e:
-                log(f"\t{str(e)}")
-                raise e
+                log(f"\tCould not make link, {str(e)}")
         else:
 
             log("\tMoving {} from {} to {}".format(self.filename, old_dir, new_dir))
