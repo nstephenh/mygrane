@@ -14,7 +14,7 @@ class Comic:
     extension - the extension of the comic
 
     pubyear - The year of publication of the comic, automatically determined by the last string in the filename matching
-        the regex "[1-2][90]\d\d"
+        the regex r"[1-2][90]\d\d"
     issue - Issue number
     title - The title of the comic
     """
@@ -133,15 +133,15 @@ class Comic:
                     return False
 
     def set_info_from_name(self):
-        self.tags = re.findall("\((.^)\)", self.filename)
-        year_regex = re.compile("\(([1-2][90]\d\d)\)")
+        self.tags = re.findall(r"\((.^)\)", self.filename)
+        year_regex = re.compile(r"\(([1-2][90]\d\d)\)")
         try:
             self.pubyear = int(year_regex.findall(self.filename)[-1])
             try:
                 frontpart = self.filename.split('(')[0]
                 try:
                     # This is a depreciated format, scanners should use "(2 covers)" instead of "02 of 04 covers"
-                    coversplit = re.split('\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
+                    coversplit = re.split(r'\d{1,2} of \d{1,2} covers', frontpart, flags=re.IGNORECASE)[0].strip()
                 except Exception:
                     log("Not using alt covers")
                     coversplit = frontpart
@@ -165,8 +165,8 @@ class Comic:
 
                 # throw out volume numbers
                 try:
-                    frontpart = re.sub(" v\d{1,2} ", " ", frontpart)
-                    frontpart = re.sub(" Vol\d{1,2} ", " ", frontpart)
+                    frontpart = re.sub(r" v\d{1,2} ", " ", frontpart)
+                    frontpart = re.sub(r" Vol\d{1,2} ", " ", frontpart)
                 except Exception:
                     pass
 
