@@ -1,6 +1,6 @@
 from mygrane import preferences
 
-logfile = open("log.txt", "w")
+logfile = open("log.txt", "w", encoding="utf-8")
 
 
 def log(log_string: str):
