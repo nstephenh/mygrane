@@ -136,7 +136,7 @@ class Collection:
                 progress_bar.refresh()
                 for filename in sorted(filenames):
                     progress_bar.update(1)
-                    log(root + "/" + filename)
+                    log(str(os.path.join(root, filename)))
                     self.contains.append(Comic(root, filename))
             total = progress_bar.total
             progress_bar.close()
