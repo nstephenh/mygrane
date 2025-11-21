@@ -14,7 +14,6 @@ class Comic:
     extension - the extension of the comic
 
     pubyear - The year of publication of the comic, automatically determined by the last string in the filename matching
-        the regex r"[1-2][90]\d\d"
     issue - Issue number
     title - The title of the comic
     """
