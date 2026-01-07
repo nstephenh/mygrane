@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import glob
 
 import tqdm
 
@@ -117,52 +118,45 @@ class Collection:
         else:
             self.location = preferences.library_directory
             info = {"collections": {self.location: {}}}
-            total = 0
-            new_total = 0
 
             try:
                 with open("info.json", "r") as fp:
                     info = json.load(fp)
-                total = info["total"]
             except KeyError:
                 log("info.json is corrupted or outdated")
             except Exception:
                 log("Could not read info.json")
-            progress_bar = tqdm.tqdm(desc="Files scanned", total=total, unit="Files")
-            for root, _, filenames in os.walk(preferences.input_directory):
-                new_total += len(filenames)
-                if new_total > progress_bar.total:
-                    progress_bar.total = new_total
-                progress_bar.refresh()
-                for filename in sorted(filenames):
-                    progress_bar.update(1)
-                    log(str(os.path.join(root, filename)))
-                    self.contains.append(Comic(root, filename))
-            total = progress_bar.total
-            progress_bar.close()
-            self.total = total
+            root = preferences.input_directory
+            log("Reading input directory: " + root)
+            for filename in tqdm.tqdm(glob.glob("**", root_dir=root, recursive=True),
+                                                desc="Reading input directory", unit=" Files"):
+                filepath = os.path.join(root, filename)
+                if os.path.isdir(filepath):
+                    continue
+                log(f"Loading {filepath}")
+                self.contains.append(Comic(os.path.split(filepath)[0], os.path.split(filepath)[1]))
+            self.total = len(self.contains)
             if preferences.use_links:
                 # Find existing links to files in the library
-                progress_bar = tqdm.tqdm(desc="Checking existing library", total=total, unit="Files")
-                for root, _, filenames in os.walk(preferences.library_directory):
-                    for filename in sorted(filenames):
-                        progress_bar.update(1)
-                        path = os.path.join(root, filename)
-                        log(path)
-                        comic = next((comic for comic in self.contains if comic.filename == filename), None)
-                        if comic is not None:
-                            comic.link_path = path
-                progress_bar.close()
+                root = preferences.input_directory
+                log("Checking Existing library: " + root)
+
+                for filename in tqdm.tqdm(glob.glob("**", root_dir=root, recursive=True),
+                                          desc="Linking Files", unit=" Files"):
+                    path = os.path.join(root, filename)
+                    comic = next((comic for comic in self.contains if comic.filename == filename), None)
+                    if comic is not None:
+                        comic.link_path = path
 
                 # Test that these symlinks were found and saved on the objects properly:
                 total_links = 0
-                progress_bar = tqdm.tqdm(desc="Counting Links", total=total, unit="Files")
+                progress_bar = tqdm.tqdm(desc="Counting Links", total=self.total, unit=" Files")
                 for comic in self.contains:
                     if comic.link_path is not None:
                         total_links += 1
                         progress_bar.update(1)
                 progress_bar.close()
-                print("Total links {} of {}".format(total_links, total))
+                print("Existing library contains {} of {} files".format(total_links, self.total))
 
     def to_json(self):
         return {
