@@ -78,7 +78,7 @@ class Comic:
 
         if not os.path.isdir(new_dir):
             try:
-                os.mkdir(new_dir)
+                os.makedirs(new_dir)
             except OSError as h:
                 log("Error creating directory")
                 log(str(h))
