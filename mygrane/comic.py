@@ -155,7 +155,7 @@ class Comic:
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
                     try:
-                        issuestring = re.sub("[^.0-9]", "", self.issueStr)
+                        self.issueStr = re.sub("[^.0-9]", "", self.issueStr)
                         self.issueNum = float(self.issueStr)
                     except Exception:
                         # Comic has no issuenumber
