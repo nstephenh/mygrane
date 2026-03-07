@@ -147,11 +147,14 @@ class Comic:
                     log("Not using alt covers")
                     coversplit = frontpart
 
-                self.issueStr = re.sub("#", "", coversplit.split()[-1])  # Grab last substring before issue name
+                # Grab the last substring before the issue name
+                self.issueStr = re.sub("#", "", coversplit.split()[-1])
                 # and remove "#"
 
                 try:
                     self.issueNum = float(self.issueStr)  # Using floats adds supports for .1 issues, etc
+                    # Avoid 01 and 001 being treated as different in the duplicate check by casting back to a string
+                    self.issueStr = str(self.issueNum)
                 except Exception:
                     # In case the issue number is something like 15AU, try stripping out not numeric characters
                     try:
