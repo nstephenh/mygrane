@@ -93,8 +93,10 @@ class Comic:
             # Clear old links first:
             if self.link_path and os.path.exists(self.link_path):
                 log(f"\tRemoved old link a link for '{self.filename}' from '{old_dir}' to '{self.link_path}'")
-
-                os.unlink(self.link_path)
+                try:
+                    os.unlink(self.link_path)
+                except Exception as e:
+                    log(f"\t\tFailed to remove old link, but maybe it didn't exist?: {str(e)}")
                 self.link_path = None
             if os.path.exists(new_path):
                 os.unlink(new_path)
