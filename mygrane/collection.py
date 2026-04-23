@@ -174,18 +174,20 @@ class Collection:
             comics_index_dict.update(item.index_json(links=links))
         return comics_index_dict
 
-    def write_info_file(self):
+    def write_info_file(self, pretty=False):
+        indent = 4 if pretty else None
         print("Writing info.json")
         with open("info.json", "w") as fp:
-            json.dump(self.to_json(), fp)
+            json.dump(self.to_json(), fp, indent=indent)
 
-    def write_indexes(self):
+    def write_indexes(self, pretty=False):
+        indent = 4 if pretty else None
         print("Writing indexes")
         with open("index_comics.json", "w") as fp:
-            json.dump(self.index_json(), fp)
+            json.dump(self.index_json(), fp, indent=indent)
         if preferences.use_links:
             with open("index_links.json", "w") as fp:
-                json.dump(self.index_json(links=True), fp)
+                json.dump(self.index_json(links=True), fp, indent=indent)
 
     def sort(self, test=True, allow_duplicates="False"):
         """
