@@ -6,6 +6,8 @@ load_dotenv()
 
 input_directory = os.getenv("INPUT_DIRECTORY")
 library_directory = os.getenv("LIBRARY_DIRECTORY")
+incoming_directory = os.getenv("INCOMING_DIRECTORY")
+
 
 use_links = True
 hardlink = True  # Use Hardlinks by default, switch to symlinks if false
