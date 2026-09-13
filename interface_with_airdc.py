@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Union
 
@@ -634,31 +635,196 @@ def list_filelist_directory(session_id: Union[int, str],
     return []
 
 
+def create_directory_download(list_path: str,
+                              target_name: Optional[str] = None,
+                              user: Optional[Union[Dict[str, Any], str]] = None,
+                              hub_url: Optional[str] = None,
+                              cid: Optional[str] = None,
+                              target_directory: Optional[Union[str, Path]] = None,
+                              log_bundle_errors: bool = True,
+                              priority: Optional[int] = None,
+                              host: Optional[str] = None,
+                              api_user: Optional[str] = None,
+                              password: Optional[str] = None,
+                              verbose: bool = False) -> Dict[str, Any]:
+    """
+    Queue a directory download from a remote user's filelist share via:
+    POST /api/v1/filelists/directory_downloads
+
+    Request Attributes:
+    - user: { "cid": "<CID>", "hub_url": "<HUB_URL>" }
+    - list_path: Directory path in the filelist (e.g. "/NewScans/2024.01/0-Day - 2024-01-03/")
+    - target_name: Bundle/directory target name (e.g. "0-Day - 2024-01-03")
+    - target_directory: Destination path on the filesystem (optional)
+    - log_bundle_errors: Whether to show bundle creation errors in event log (optional, default True)
+    - priority: Download priority (optional)
+    """
+    norm_path = list_path
+    if not norm_path.startswith("/"):
+        norm_path = "/" + norm_path
+    if not norm_path.endswith("/"):
+        norm_path = norm_path + "/"
+
+    if not target_name:
+        parts = [p for p in norm_path.split("/") if p]
+        target_name = parts[-1] if parts else "download"
+
+    user_cid = cid
+    user_hub_url = hub_url
+
+    if isinstance(user, dict):
+        user_cid = user_cid or user.get("cid")
+        user_hub_url = user_hub_url or user.get("hub_url") or (user.get("identity") or {}).get("connect_address")
+        if not user_hub_url and user.get("hub_urls"):
+            user_hub_url = user.get("hub_urls")[0]
+    elif isinstance(user, str):
+        if len(user) == 39 and user.isalnum():
+            user_cid = user_cid or user
+        else:
+            resolved_user = find_user(user, host=host, user=api_user, password=password, verbose=verbose)
+            if resolved_user:
+                user_cid = user_cid or resolved_user.get("cid")
+                user_hub_url = user_hub_url or resolved_user.get("hub_url")
+
+    if not user_hub_url:
+        try:
+            hubs = get_hubs(host=host, user=api_user, password=password)
+            if hubs:
+                user_hub_url = (hubs[0].get("hub_url")
+                                or (hubs[0].get("identity") or {}).get("connect_address")
+                                or (hubs[0].get("identity") or {}).get("hub_url")
+                                or hubs[0].get("connect_address")
+                                or hubs[0].get("url")
+                                or hubs[0].get("address"))
+        except Exception:
+            pass
+
+    if not user_cid or not user_hub_url:
+        try:
+            filelists = get_filelists(host=host, user=api_user, password=password)
+            for fl in filelists:
+                fl_user = fl.get("user") or {}
+                if isinstance(fl_user, dict):
+                    if not user_cid:
+                        user_cid = fl_user.get("cid")
+                    if not user_hub_url:
+                        user_hub_url = fl_user.get("hub_url") or (fl_user.get("hub_urls") or [None])[0]
+                    if user_cid and user_hub_url:
+                        break
+        except Exception:
+            pass
+
+    user_payload: Dict[str, Any] = {}
+    if user_cid:
+        user_payload["cid"] = user_cid
+    if user_hub_url:
+        user_payload["hub_url"] = user_hub_url
+
+    payload: Dict[str, Any] = {
+        "user": user_payload,
+        "list_path": norm_path,
+        "target_name": target_name,
+        "log_bundle_errors": log_bundle_errors
+    }
+    if target_directory is not None:
+        payload["target_directory"] = str(target_directory)
+    if priority is not None:
+        payload["priority"] = priority
+
+    if verbose:
+        print(f"[AirDC] Creating directory download: POST /api/v1/filelists/directory_downloads with payload: {payload}")
+
+    response = request_to_air("filelists/directory_downloads",
+                              payload=payload,
+                              method="POST",
+                              host=host, user=api_user, password=password)
+    _raise_for_status_with_detail(response)
+    if response.content:
+        try:
+            return response.json()
+        except Exception:
+            return {"status": "ok", "status_code": getattr(response, "status_code", 200)}
+    return {"status": "ok", "status_code": getattr(response, "status_code", 200)}
+
+
 def download_filelist_directory(session_id: Union[int, str],
                                 remote_path: str,
-                                target_directory: str,
+                                target_directory: Optional[Union[str, Path]] = None,
                                 target_name: Optional[str] = None,
                                 priority: int = 0,
+                                user_info: Optional[Dict[str, Any]] = None,
+                                log_bundle_errors: bool = True,
                                 host: Optional[str] = None,
                                 user: Optional[str] = None,
                                 password: Optional[str] = None,
                                 verbose: bool = False) -> Dict[str, Any]:
+    norm_path = remote_path
+    if not norm_path.startswith("/"):
+        norm_path = "/" + norm_path
+    if not norm_path.endswith("/"):
+        norm_path = norm_path + "/"
+
+    if not target_name:
+        parts = [p for p in norm_path.split("/") if p]
+        target_name = parts[-1] if parts else "download"
+
+    # 1. First attempt: Use POST /api/v1/filelists/directory_downloads
+    resolved_user = dict(user_info) if isinstance(user_info, dict) else {}
+    if not resolved_user or "cid" not in resolved_user or "hub_url" not in resolved_user:
+        try:
+            status_data = get_filelist_status(session_id, host=host, user=user, password=password)
+            if isinstance(status_data, dict) and isinstance(status_data.get("user"), dict):
+                for k, v in status_data["user"].items():
+                    if k not in resolved_user or not resolved_user[k]:
+                        resolved_user[k] = v
+        except Exception:
+            pass
+
+    if "cid" not in resolved_user and isinstance(session_id, str) and len(session_id) == 39 and session_id.isalnum():
+        resolved_user["cid"] = session_id
+
+    try:
+        return create_directory_download(list_path=norm_path,
+                                         target_name=target_name,
+                                         user=resolved_user,
+                                         target_directory=str(target_directory) if target_directory is not None else None,
+                                         log_bundle_errors=log_bundle_errors,
+                                         priority=priority if priority != 0 else None,
+                                         host=host,
+                                         api_user=user,
+                                         password=password,
+                                         verbose=verbose)
+    except requests.HTTPError as e:
+        if verbose:
+            status = e.response.status_code if e.response is not None else "error"
+            print(f"[AirDC] POST /api/v1/filelists/directory_downloads failed with HTTP {status}: {e}. Trying fallback endpoints...")
+        if e.response is None or e.response.status_code not in (400, 404, 405, 422):
+            raise
+    except Exception as e:
+        if verbose:
+            print(f"[AirDC] POST /api/v1/filelists/directory_downloads failed: {e}. Trying fallback endpoints...")
+
+    # 2. Fallback attempts for alternative/legacy API versions
     full_payload: Dict[str, Any] = {
-        "path": remote_path,
-        "target_directory": str(target_directory),
+        "path": norm_path,
+        "list_path": norm_path,
         "priority": priority
     }
+    if target_directory is not None:
+        full_payload["target_directory"] = str(target_directory)
     if target_name is not None:
         full_payload["target_name"] = target_name
 
     basic_payload: Dict[str, Any] = {
-        "path": remote_path,
-        "target_directory": str(target_directory)
+        "path": norm_path
     }
+    if target_directory is not None:
+        basic_payload["target_directory"] = str(target_directory)
     if target_name is not None:
         basic_payload["target_name"] = target_name
 
     candidate_endpoints = [
+        f"filelists/{session_id}/directory_downloads",
         f"filelists/{session_id}/download",
         f"filelists/{session_id}/directory/download",
         f"filelists/{session_id}/download_directory"
@@ -670,7 +836,7 @@ def download_filelist_directory(session_id: Union[int, str],
         for payload in candidate_payloads:
             try:
                 if verbose:
-                    print(f"[AirDC] Attempting download: POST /api/v1/{endpoint} with payload {payload}")
+                    print(f"[AirDC] Attempting fallback download: POST /api/v1/{endpoint} with payload {payload}")
                 response = request_to_air(endpoint,
                                           payload=payload,
                                           method="POST",
@@ -698,7 +864,7 @@ def download_filelist_directory(session_id: Union[int, str],
 
     if last_error:
         raise last_error
-    raise RuntimeError(f"Failed to queue download for '{remote_path}' in session {session_id}")
+    raise RuntimeError(f"Failed to queue download for '{norm_path}' in session {session_id}")
 
 
 def close_filelist_session(session_id: Union[int, str],
@@ -773,6 +939,7 @@ class AirDCFilelistSession:
         self.password = password
         self.verbose = verbose
         self.session_id: Optional[Union[int, str]] = None
+        self.user_info: Optional[Dict[str, Any]] = None
 
     def __enter__(self) -> "AirDCFilelistSession":
         self.session_id = create_filelist_session(user=self.user,
@@ -783,6 +950,16 @@ class AirDCFilelistSession:
                                                   api_user=self.api_user,
                                                   password=self.password,
                                                   verbose=self.verbose)
+        try:
+            status = get_filelist_status(self.session_id, host=self.host, user=self.api_user, password=self.password)
+            if isinstance(status, dict) and isinstance(status.get("user"), dict):
+                self.user_info = status["user"]
+        except Exception:
+            pass
+
+        if not self.user_info and isinstance(self.user, dict):
+            self.user_info = self.user
+
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -804,9 +981,10 @@ class AirDCFilelistSession:
 
     def download_directory(self,
                            remote_path: str,
-                           target_directory: str,
+                           target_directory: Optional[Union[str, Path]] = None,
                            target_name: Optional[str] = None,
-                           priority: int = 0) -> Dict[str, Any]:
+                           priority: int = 0,
+                           log_bundle_errors: bool = True) -> Dict[str, Any]:
         if self.session_id is None:
             raise RuntimeError("Filelist session is not open.")
         return download_filelist_directory(self.session_id,
@@ -814,6 +992,8 @@ class AirDCFilelistSession:
                                            target_directory=target_directory,
                                            target_name=target_name,
                                            priority=priority,
+                                           user_info=self.user_info,
+                                           log_bundle_errors=log_bundle_errors,
                                            host=self.host,
                                            user=self.api_user,
                                            password=self.password,

@@ -3,12 +3,14 @@ from unittest.mock import MagicMock, patch
 from pathlib import Path
 import tempfile
 import shutil
+import requests
 
 from interface_with_airdc import (
     request_to_air,
     create_filelist_session,
     list_filelist_directory,
     download_filelist_directory,
+    create_directory_download,
     close_filelist_session,
     get_queue_bundles,
     get_share_profiles,
@@ -180,14 +182,128 @@ class TestAirDCInterface(unittest.TestCase):
         self.assertEqual(items[0]["name"], "2024.01")
 
     @patch("interface_with_airdc.request_to_air")
+    def test_create_directory_download(self, mock_req):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"bundle_id": 100}
+        mock_response.raise_for_status.return_value = None
+        mock_req.return_value = mock_response
+
+        res = create_directory_download(
+            list_path="/NewScans/2024.01/0-Day - 2024-01-03/",
+            target_name="0-Day - 2024-01-03",
+            user={"cid": "NJSHVYR4ZHCZFUEZNGA7M2D72S5AB4WQAMPBKFA", "hub_url": "adcs://myhub.com:6423"},
+            target_directory="C:/Incoming/2024.01",
+            log_bundle_errors=True
+        )
+        self.assertEqual(res, {"bundle_id": 100})
+        mock_req.assert_called_with(
+            "filelists/directory_downloads",
+            payload={
+                "user": {
+                    "cid": "NJSHVYR4ZHCZFUEZNGA7M2D72S5AB4WQAMPBKFA",
+                    "hub_url": "adcs://myhub.com:6423"
+                },
+                "list_path": "/NewScans/2024.01/0-Day - 2024-01-03/",
+                "target_name": "0-Day - 2024-01-03",
+                "log_bundle_errors": True,
+                "target_directory": "C:/Incoming/2024.01"
+            },
+            method="POST",
+            host=None,
+            user=None,
+            password=None
+        )
+
+    @patch("interface_with_airdc.get_hubs")
+    @patch("interface_with_airdc.request_to_air")
+    def test_create_directory_download_with_cid_and_hub_lookup(self, mock_req, mock_get_hubs):
+        mock_get_hubs.return_value = [{"id": 1, "hub_url": "adcs://myhub.com:6423"}]
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"bundle_id": 101}
+        mock_response.raise_for_status.return_value = None
+        mock_req.return_value = mock_response
+
+        res = create_directory_download(
+            list_path="/Share/Ubuntu/",
+            target_name="Ubuntu",
+            cid="NJSHVYR4ZHCZFUEZNGA7M2D72S5AB4WQAMPBKFA"
+        )
+        self.assertEqual(res, {"bundle_id": 101})
+        mock_req.assert_called_with(
+            "filelists/directory_downloads",
+            payload={
+                "user": {
+                    "cid": "NJSHVYR4ZHCZFUEZNGA7M2D72S5AB4WQAMPBKFA",
+                    "hub_url": "adcs://myhub.com:6423"
+                },
+                "list_path": "/Share/Ubuntu/",
+                "target_name": "Ubuntu",
+                "log_bundle_errors": True
+            },
+            method="POST",
+            host=None,
+            user=None,
+            password=None
+        )
+
+    @patch("interface_with_airdc.request_to_air")
     def test_download_filelist_directory(self, mock_req):
         mock_response = MagicMock()
         mock_response.json.return_value = {"bundle_id": 100}
         mock_response.raise_for_status.return_value = None
         mock_req.return_value = mock_response
 
-        res = download_filelist_directory(42, "/New Releases/2024.01/0-Day - 2024-01-01/", "C:/Incoming/2024.01", "0-Day - 2024-01-01")
+        res = download_filelist_directory(
+            "SMNF3MD2ERR2WGASZU7MKV3KNSBVIJYCJ75IHPQ",
+            "/New Releases/2024.01/0-Day - 2024-01-01/",
+            "C:/Incoming/2024.01",
+            "0-Day - 2024-01-01",
+            user_info={"cid": "SMNF3MD2ERR2WGASZU7MKV3KNSBVIJYCJ75IHPQ", "hub_url": "adcs://myhub.com:6423"}
+        )
         self.assertEqual(res, {"bundle_id": 100})
+        self.assertEqual(mock_req.call_args[0][0], "filelists/directory_downloads")
+        self.assertEqual(mock_req.call_args[1]["payload"]["user"]["cid"], "SMNF3MD2ERR2WGASZU7MKV3KNSBVIJYCJ75IHPQ")
+        self.assertEqual(mock_req.call_args[1]["payload"]["target_name"], "0-Day - 2024-01-01")
+
+    @patch("interface_with_airdc.request_to_air")
+    def test_download_filelist_directory_fallback_on_400(self, mock_req):
+        err_response = MagicMock()
+        err_response.status_code = 400
+        err_response.json.return_value = {"message": "Invalid field: priority"}
+        err = requests.HTTPError(response=err_response)
+
+        ok_response = MagicMock()
+        ok_response.status_code = 200
+        ok_response.json.return_value = {"bundle_id": 200}
+        ok_response.raise_for_status.return_value = None
+
+        mock_req.side_effect = [err, ok_response]
+
+        res = download_filelist_directory(
+            42,
+            "/NewScans/2024.01/0-Day - 2024-01-01/",
+            "C:/Incoming/2024.01",
+            "0-Day - 2024-01-01",
+            user_info={"cid": "SMNF3MD2ERR2WGASZU7MKV3KNSBVIJYCJ75IHPQ", "hub_url": "adcs://myhub.com:6423"}
+        )
+        self.assertEqual(res, {"bundle_id": 200})
+        self.assertEqual(mock_req.call_count, 2)
+
+    @patch("interface_with_airdc.request_to_air")
+    def test_download_filelist_directory_204_no_content(self, mock_req):
+        mock_response = MagicMock()
+        mock_response.status_code = 204
+        mock_response.content = b""
+        mock_response.raise_for_status.return_value = None
+        mock_req.return_value = mock_response
+
+        res = download_filelist_directory(
+            42,
+            "/NewScans/2024.01/0-Day - 2024-01-01/",
+            "C:/Incoming/2024.01",
+            user_info={"cid": "SMNF3MD2ERR2WGASZU7MKV3KNSBVIJYCJ75IHPQ", "hub_url": "adcs://myhub.com:6423"}
+        )
+        self.assertEqual(res, {"status": "ok", "status_code": 204})
 
     @patch("interface_with_airdc.request_to_air")
     def test_close_filelist_session(self, mock_req):
