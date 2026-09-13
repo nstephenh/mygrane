@@ -6,6 +6,6 @@ if preferences.input_directory is None:
     exit()
 
 stuff = Collection()
-stuff.sort(test=False, allow_duplicates="True")
+stuff.sort(test=False, allow_duplicates="false")
 stuff.write_info_file()
-stuff.write_indexes()
+stuff.write_indexes(pretty=True)
