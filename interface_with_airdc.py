@@ -295,7 +295,8 @@ def find_user(user_identifier: Union[str, Dict[str, Any]],
         for ep in [f"hubs/{hub_id}/users/0/10000", f"hubs/{hub_id}/users"]:
             try:
                 resp = request_to_air(ep, method="GET", host=host, user=user, password=password)
-                if resp.status_code == 200:
+                sc = getattr(resp, "status_code", 200)
+                if (sc in (200, 204)) if isinstance(sc, int) else True:
                     data = resp.json()
                     if isinstance(data, list):
                         user_candidates = data
@@ -313,7 +314,8 @@ def find_user(user_identifier: Union[str, Dict[str, Any]],
             for ep in [f"hubs/{hub_id}/user_search", f"hubs/{hub_id}/users/search"]:
                 try:
                     resp = request_to_air(ep, payload={"pattern": target_nick}, method="POST", host=host, user=user, password=password)
-                    if resp.status_code == 200:
+                    sc = getattr(resp, "status_code", 200)
+                    if (sc in (200, 204)) if isinstance(sc, int) else True:
                         data = resp.json()
                         if isinstance(data, list):
                             user_candidates = data
@@ -351,7 +353,8 @@ def find_user(user_identifier: Union[str, Dict[str, Any]],
                                   payload={"pattern": target_nick} if "search" in ep else None,
                                   method="POST" if "search" in ep else "GET",
                                   host=host, user=user, password=password)
-            if resp.status_code == 200:
+            sc = getattr(resp, "status_code", 200)
+            if (sc in (200, 204)) if isinstance(sc, int) else True:
                 data = resp.json()
                 items = data if isinstance(data, list) else (data.get("items") or data.get("users") or [])
                 for item in items:
@@ -508,8 +511,9 @@ def create_filelist_session(user: Optional[Union[Dict[str, Any], str]] = None,
         response = request_to_air("filelists", payload=payload, method="POST", host=host, user=api_user, password=password)
         last_response = response
         status_code = getattr(response, "status_code", 200)
+        is_success = (status_code in (200, 201)) if isinstance(status_code, int) else True
 
-        if isinstance(status_code, int) and status_code in (200, 201):
+        if is_success:
             try:
                 session_data = response.json()
                 session_id = session_data.get("id")
@@ -637,32 +641,64 @@ def download_filelist_directory(session_id: Union[int, str],
                                 priority: int = 0,
                                 host: Optional[str] = None,
                                 user: Optional[str] = None,
-                                password: Optional[str] = None) -> Dict[str, Any]:
-    payload: Dict[str, Any] = {
+                                password: Optional[str] = None,
+                                verbose: bool = False) -> Dict[str, Any]:
+    full_payload: Dict[str, Any] = {
         "path": remote_path,
         "target_directory": str(target_directory),
         "priority": priority
     }
     if target_name is not None:
-        payload["target_name"] = target_name
+        full_payload["target_name"] = target_name
 
-    try:
-        response = request_to_air(f"filelists/{session_id}/directory/download",
-                                  payload=payload,
-                                  method="POST",
-                                  host=host, user=user, password=password)
-        _raise_for_status_with_detail(response)
-        return response.json()
-    except requests.HTTPError as e:
-        # Fallback to general download endpoint if directory download returns 404
-        if e.response is not None and e.response.status_code == 404:
-            fallback_response = request_to_air(f"filelists/{session_id}/download",
-                                               payload=payload,
-                                               method="POST",
-                                               host=host, user=user, password=password)
-            _raise_for_status_with_detail(fallback_response)
-            return fallback_response.json()
-        raise
+    basic_payload: Dict[str, Any] = {
+        "path": remote_path,
+        "target_directory": str(target_directory)
+    }
+    if target_name is not None:
+        basic_payload["target_name"] = target_name
+
+    candidate_endpoints = [
+        f"filelists/{session_id}/download",
+        f"filelists/{session_id}/directory/download",
+        f"filelists/{session_id}/download_directory"
+    ]
+    candidate_payloads = [full_payload, basic_payload]
+
+    last_error = None
+    for endpoint in candidate_endpoints:
+        for payload in candidate_payloads:
+            try:
+                if verbose:
+                    print(f"[AirDC] Attempting download: POST /api/v1/{endpoint} with payload {payload}")
+                response = request_to_air(endpoint,
+                                          payload=payload,
+                                          method="POST",
+                                          host=host, user=user, password=password)
+                _raise_for_status_with_detail(response)
+                if response.content:
+                    try:
+                        return response.json()
+                    except Exception:
+                        return {"status": "ok", "status_code": getattr(response, "status_code", 200)}
+                return {"status": "ok", "status_code": getattr(response, "status_code", 200)}
+            except requests.HTTPError as e:
+                last_error = e
+                if verbose:
+                    status = e.response.status_code if e.response is not None else "error"
+                    print(f"[AirDC] POST /api/v1/{endpoint} failed with HTTP {status}: {e}")
+                if e.response is not None and e.response.status_code in (400, 404, 405, 422):
+                    continue
+                raise
+            except Exception as e:
+                last_error = e
+                if verbose:
+                    print(f"[AirDC] POST /api/v1/{endpoint} failed: {e}")
+                continue
+
+    if last_error:
+        raise last_error
+    raise RuntimeError(f"Failed to queue download for '{remote_path}' in session {session_id}")
 
 
 def close_filelist_session(session_id: Union[int, str],
@@ -780,7 +816,8 @@ class AirDCFilelistSession:
                                            priority=priority,
                                            host=self.host,
                                            user=self.api_user,
-                                           password=self.password)
+                                           password=self.password,
+                                           verbose=self.verbose)
 
 
 if __name__ == "__main__":

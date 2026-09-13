@@ -318,18 +318,19 @@ class TestCheckForNewReleases(unittest.TestCase):
         mock_queue.return_value = []
         mock_sess = MagicMock()
         mock_sess.list_directory.side_effect = lambda path: {
-            "/New Releases/": [
-                {"name": "2026.09", "type": {"id": "directory"}, "path": "/New Releases/2026.09/"}
+            "/NewScans/": [
+                {"name": "2026.09", "type": {"id": "directory"}, "path": "/NewScans/2026.09/"}
             ],
-            "/New Releases/2026.09/": [
-                {"name": "0-Day - 2026-09-02", "type": {"id": "directory"}, "path": "/New Releases/2026.09/0-Day - 2026-09-02/"}
+            "/NewScans/2026.09/": [
+                {"name": "0-Day - 2026-09-02", "type": {"id": "directory"}, "path": "/NewScans/2026.09/0-Day - 2026-09-02/"}
             ]
         }.get(path, [])
         mock_session_cls.return_value.__enter__.return_value = mock_sess
 
         with patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
              patch("Scripts.check_for_new_releases.preferences.air_hub", "The Comic Shack"), \
-             patch("Scripts.check_for_new_releases.preferences.air_target_user", "KT8Bot2022"):
+             patch("Scripts.check_for_new_releases.preferences.air_target_user", "KT8Bot2022"), \
+             patch("Scripts.check_for_new_releases.preferences.air_target_folder", "NewScans"):
 
             queued = check_and_download_releases()
 
@@ -337,8 +338,75 @@ class TestCheckForNewReleases(unittest.TestCase):
             mock_session_cls.assert_called_with(
                 user={"nicks": "KT8Bot2022"},
                 hub="The Comic Shack",
-                share_profile=None
+                share_profile=None,
+                verbose=False
             )
+
+    @patch("interface_with_airdc.request_to_air")
+    def test_find_user_in_hub(self, mock_req):
+        def req_side_effect(endpoint, **kwargs):
+            mock_resp = MagicMock()
+            if endpoint == "hubs":
+                mock_resp.status_code = 200
+                mock_resp.json.return_value = [{"id": 1, "identity": {"name": "The Comic Shack", "connect_address": "adcs://hub.comicshack:411"}}]
+            elif endpoint == "hubs/1/users/0/10000":
+                mock_resp.status_code = 200
+                mock_resp.json.return_value = [{"cid": "USERCID12345", "nick": "KT8Bot2022"}]
+            elif endpoint == "filelists":
+                mock_resp.status_code = 200
+                mock_resp.json.return_value = []
+            else:
+                mock_resp.status_code = 404
+            return mock_resp
+
+        mock_req.side_effect = req_side_effect
+        from interface_with_airdc import find_user
+        user_info = find_user("KT8Bot2022", hub_identifier="The Comic Shack")
+        self.assertIsNotNone(user_info)
+        self.assertEqual(user_info.get("cid"), "USERCID12345")
+        self.assertEqual(user_info.get("hub_url"), "adcs://hub.comicshack:411")
+
+    @patch("interface_with_airdc.get_filelists")
+    @patch("interface_with_airdc.request_to_air")
+    def test_create_filelist_session_payload_fallback(self, mock_req, mock_get_filelists):
+        mock_get_filelists.return_value = []
+        call_count = [0]
+
+        def req_side_effect(endpoint, **kwargs):
+            mock_resp = MagicMock()
+            if endpoint == "filelists" and kwargs.get("method") == "POST":
+                call_count[0] += 1
+                if call_count[0] == 1:
+                    mock_resp.status_code = 422
+                    mock_resp.json.return_value = {"message": "Invalid user schema"}
+                    mock_resp.raise_for_status.side_effect = Exception("422 Client Error")
+                else:
+                    mock_resp.status_code = 200
+                    mock_resp.json.return_value = {"id": 99, "state": {"id": "loaded"}}
+                    mock_resp.raise_for_status.return_value = None
+            elif endpoint == "hubs":
+                mock_resp.status_code = 200
+                mock_resp.json.return_value = []
+            else:
+                mock_resp.status_code = 200
+                mock_resp.json.return_value = {"id": 99, "state": {"id": "loaded"}}
+            return mock_resp
+
+        mock_req.side_effect = req_side_effect
+        session_id = create_filelist_session(user="Alice", verbose=True)
+        self.assertEqual(session_id, 99)
+        self.assertGreaterEqual(call_count[0], 2)
+
+    def test_find_month_directories_verbose(self):
+        mock_session = MagicMock()
+        mock_session.list_directory.side_effect = lambda path: {
+            "/NewScans/": [
+                {"name": "2026.09", "type": {"id": "directory"}, "path": "/NewScans/2026.09/"}
+            ]
+        }.get(path, [])
+        month_dirs = find_month_directories(mock_session, "NewScans", verbose=True)
+        self.assertEqual(len(month_dirs), 1)
+        self.assertEqual(month_dirs[0]["name"], "2026.09")
 
 
 if __name__ == "__main__":
