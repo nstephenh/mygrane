@@ -32,6 +32,31 @@ def is_release_folder(name: str) -> bool:
     return name.startswith("0-Day") or name.startswith("Hitlist")
 
 
+def get_release_subdir(name: str) -> str:
+    if name.startswith("0-Day"):
+        return "0-Days"
+    if name.startswith("Hitlist"):
+        return "Hitlists"
+    return ""
+
+
+def join_target_path(base_path: Union[str, Path], subfolder: str = "") -> str:
+    base_str = str(base_path).strip()
+    if not subfolder:
+        if base_str and not base_str.endswith("/") and not base_str.endswith("\\"):
+            base_str += "/" if ("/" in base_str or base_str.startswith("/")) else "\\"
+        return base_str
+
+    if "/" in base_str or (not "\\" in base_str and not (len(base_str) > 1 and base_str[1] == ":")):
+        base_str = base_str.rstrip("/")
+        sub = subfolder.strip("/")
+        return f"{base_str}/{sub}/"
+    else:
+        base_str = base_str.rstrip("\\")
+        sub = subfolder.strip("\\")
+        return f"{base_str}\\{sub}\\"
+
+
 def get_queued_release_names() -> Set[str]:
     queued_names = set()
     bundles = get_queue_bundles()
@@ -48,25 +73,34 @@ def get_queued_release_names() -> Set[str]:
 
 
 def is_already_downloaded_or_queued(release_name: str,
-                                    month_folder_name: str,
-                                    incoming_directory: Path,
-                                    input_directory: Optional[Path],
-                                    queued_names: Set[str]) -> bool:
-    if release_name in queued_names:
+                                    month_folder_name: Optional[str] = None,
+                                    incoming_directory: Optional[Path] = None,
+                                    input_directory: Optional[Path] = None,
+                                    queued_names: Optional[Set[str]] = None) -> bool:
+    queued = queued_names or set()
+    if release_name in queued:
         return True
 
-    # Check incoming directory month folder
-    incoming_month_dir = incoming_directory / month_folder_name
-    if (incoming_month_dir / release_name).exists():
-        return True
+    subdir = get_release_subdir(release_name)
 
-    # Check input directory destinations (moved releases)
+    # Check input directory destinations (e.g. "0. Released Comics/0-Days/..." or "0. Released Comics/Hitlists/...")
     if input_directory and input_directory.exists():
+        if subdir and (input_directory / subdir / release_name).exists():
+            return True
         if (input_directory / "0-Days" / release_name).exists():
             return True
         if (input_directory / "Hitlists" / release_name).exists():
             return True
         if (input_directory / release_name).exists():
+            return True
+
+    # Check incoming directory (month folder, subdir, or root)
+    if incoming_directory and incoming_directory.exists():
+        if month_folder_name and (incoming_directory / month_folder_name / release_name).exists():
+            return True
+        if subdir and (incoming_directory / subdir / release_name).exists():
+            return True
+        if (incoming_directory / release_name).exists():
             return True
 
     return False
@@ -165,19 +199,38 @@ def check_and_download_releases(target_folder: Optional[str] = None,
                                 target_user: Optional[str] = None,
                                 user_nick: Optional[str] = None,
                                 share_profile: Optional[Union[int, str]] = None,
+                                released_directory: Optional[Union[str, Path]] = None,
+                                input_directory: Optional[Union[str, Path]] = None,
+                                incoming_directory: Optional[Union[str, Path]] = None,
                                 dry_run: bool = False,
                                 verbose: bool = False,
                                 session: Optional[AirDCFilelistSession] = None) -> List[str]:
     is_verbose = verbose or preferences.verbose
 
-    incoming_dir_str = preferences.incoming_directory
-    if not incoming_dir_str:
-        raise ValueError("INCOMING_DIRECTORY preference is not set.")
-    incoming_directory = Path(incoming_dir_str)
-    incoming_directory.mkdir(parents=True, exist_ok=True)
+    input_dir_val = input_directory or preferences.input_directory
+    input_dir_obj = Path(input_dir_val) if input_dir_val else None
 
-    input_dir_str = preferences.input_directory
-    input_directory = Path(input_dir_str) if input_dir_str else None
+    incoming_dir_val = incoming_directory or preferences.incoming_directory
+    incoming_dir_obj = Path(incoming_dir_val) if incoming_dir_val else None
+
+    # Base target path for AirDC++ (can be a remote Linux mount path like /mnt/virt/Comics/0. Released Comics/)
+    air_released_base = (released_directory
+                         or preferences.air_released_comics_directory
+                         or (str(input_dir_obj) if input_dir_obj else None)
+                         or (str(incoming_dir_obj) if incoming_dir_obj else None))
+
+    if not air_released_base:
+        raise ValueError("No destination directory configured (AIR_RELEASED_COMICS_DIRECTORY, INPUT_DIRECTORY, or INCOMING_DIRECTORY must be set).")
+
+    # Try creating local destination directories if input_directory exists locally
+    if input_dir_obj:
+        try:
+            if input_dir_obj.exists():
+                (input_dir_obj / "0-Days").mkdir(parents=True, exist_ok=True)
+                (input_dir_obj / "Hitlists").mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            if is_verbose:
+                print(f"[Verbose] Could not create local input subdirectories: {e}")
 
     target_share_path = (target_folder
                          or share_path
@@ -196,14 +249,16 @@ def check_and_download_releases(target_folder: Optional[str] = None,
         print(f"  Target Hub: {target_hub or '(any/none)'}")
         print(f"  Target User: {target_user_nick or '(none)'}")
         print(f"  Share Profile: {target_share_profile or '(default)'}")
-        print(f"  Incoming Directory: {incoming_directory}")
-        print(f"  Input Directory: {input_directory or '(none)'}")
+        print(f"  AirDC Released Comics Directory: {air_released_base}")
+        print(f"  Local Input Directory: {input_dir_obj or '(none)'}")
+        print(f"  Local Incoming Directory: {incoming_dir_obj or '(none)'}")
         print(f"  Dry Run: {dry_run}")
     else:
         if target_hub:
             print(f"Target hub: {target_hub}")
         if target_user_nick:
             print(f"Target user: {target_user_nick}")
+        print(f"Downloading to: {air_released_base}")
 
     user_dict = {"nicks": target_user_nick} if target_user_nick else None
 
@@ -225,9 +280,6 @@ def check_and_download_releases(target_folder: Optional[str] = None,
             if not month_name or not month_path:
                 continue
 
-            target_month_dir = incoming_directory / month_name
-            target_month_dir.mkdir(parents=True, exist_ok=True)
-
             print(f"Checking releases for month: {month_name}")
             month_contents = sess.list_directory(month_path)
             if is_verbose:
@@ -245,15 +297,18 @@ def check_and_download_releases(target_folder: Optional[str] = None,
                         print(f"  [SKIPPED] Non-release item: {item_name}")
                     continue
 
-                if is_already_downloaded_or_queued(item_name, month_name, incoming_directory, input_directory, queued_names):
+                if is_already_downloaded_or_queued(item_name, month_name, incoming_dir_obj, input_dir_obj, queued_names):
                     print(f"  [SKIPPED] Already present/queued: {item_name}")
                     continue
 
-                print(f"  [QUEUEING] {item_name} -> {target_month_dir}")
+                subdir = get_release_subdir(item_name)
+                target_dir = join_target_path(air_released_base, subdir)
+
+                print(f"  [QUEUEING] {item_name} -> {target_dir}")
                 if not dry_run:
                     sess.download_directory(
                         remote_path=item_path,
-                        target_directory=str(target_month_dir),
+                        target_directory=target_dir,
                         target_name=item_name
                     )
                 downloaded_or_queued_list.append(item_name)
@@ -276,6 +331,7 @@ def main() -> None:
     parser.add_argument("--hub", type=str, default=None, help="Target hub name, URL, or ID (e.g. 'The Comic Shack')")
     parser.add_argument("--target-user", "--user-nick", dest="target_user", type=str, default=None, help="Remote target user nick (e.g. 'KT8Bot2022')")
     parser.add_argument("--target-folder", "--share-path", dest="target_folder", type=str, default=None, help="Remote target folder or share path (e.g. 'NewScans' or '/New Releases/')")
+    parser.add_argument("--released-directory", "--air-released-directory", dest="released_directory", type=str, default=None, help="AirDC++ destination released comics directory (e.g. '/mnt/virt/Comics/0. Released Comics/')")
     parser.add_argument("--share-profile", type=str, default=None, help="Share profile name or ID for local share")
     parser.add_argument("--dry-run", action="store_true", help="Scan and show releases without triggering download")
     parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose diagnostic details about API calls and matching")
@@ -286,6 +342,7 @@ def main() -> None:
         hub=args.hub,
         target_user=args.target_user,
         share_profile=args.share_profile,
+        released_directory=args.released_directory,
         dry_run=args.dry_run,
         verbose=args.verbose
     )

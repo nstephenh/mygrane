@@ -635,6 +635,22 @@ def list_filelist_directory(session_id: Union[int, str],
     return []
 
 
+def _normalize_target_directory(target_directory: Optional[Union[str, Path]]) -> Optional[str]:
+    if target_directory is None:
+        return None
+    target_dir_str = str(target_directory).strip()
+    if not target_dir_str:
+        return None
+    if not target_dir_str.endswith("/") and not target_dir_str.endswith("\\"):
+        if "/" in target_dir_str or target_dir_str.startswith("/"):
+            target_dir_str += "/"
+        elif "\\" in target_dir_str:
+            target_dir_str += "\\"
+        else:
+            target_dir_str += "/"
+    return target_dir_str
+
+
 def create_directory_download(list_path: str,
                               target_name: Optional[str] = None,
                               user: Optional[Union[Dict[str, Any], str]] = None,
@@ -726,8 +742,9 @@ def create_directory_download(list_path: str,
         "target_name": target_name,
         "log_bundle_errors": log_bundle_errors
     }
-    if target_directory is not None:
-        payload["target_directory"] = str(target_directory)
+    norm_target_dir = _normalize_target_directory(target_directory)
+    if norm_target_dir is not None:
+        payload["target_directory"] = norm_target_dir
     if priority is not None:
         payload["priority"] = priority
 
@@ -805,21 +822,22 @@ def download_filelist_directory(session_id: Union[int, str],
             print(f"[AirDC] POST /api/v1/filelists/directory_downloads failed: {e}. Trying fallback endpoints...")
 
     # 2. Fallback attempts for alternative/legacy API versions
+    norm_target_dir = _normalize_target_directory(target_directory)
     full_payload: Dict[str, Any] = {
         "path": norm_path,
         "list_path": norm_path,
         "priority": priority
     }
-    if target_directory is not None:
-        full_payload["target_directory"] = str(target_directory)
+    if norm_target_dir is not None:
+        full_payload["target_directory"] = norm_target_dir
     if target_name is not None:
         full_payload["target_name"] = target_name
 
     basic_payload: Dict[str, Any] = {
         "path": norm_path
     }
-    if target_directory is not None:
-        basic_payload["target_directory"] = str(target_directory)
+    if norm_target_dir is not None:
+        basic_payload["target_directory"] = norm_target_dir
     if target_name is not None:
         basic_payload["target_name"] = target_name
 

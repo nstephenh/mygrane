@@ -17,6 +17,7 @@ air_hub = os.getenv("AIR_HUB")
 air_target_user = os.getenv("AIR_TARGET_USER") or os.getenv("AIR_USER_NICK")
 air_user_nick = air_target_user
 air_share_profile = os.getenv("AIR_SHARE_PROFILE")
+air_released_comics_directory = os.getenv("AIR_RELEASED_COMICS_DIRECTORY")
 
 
 use_links = True

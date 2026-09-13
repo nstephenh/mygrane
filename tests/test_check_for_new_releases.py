@@ -24,6 +24,8 @@ from interface_with_airdc import (
 from Scripts.check_for_new_releases import (
     is_directory_item,
     is_release_folder,
+    get_release_subdir,
+    join_target_path,
     is_already_downloaded_or_queued,
     find_month_directories,
     check_and_download_releases,
@@ -206,7 +208,7 @@ class TestAirDCInterface(unittest.TestCase):
                 "list_path": "/NewScans/2024.01/0-Day - 2024-01-03/",
                 "target_name": "0-Day - 2024-01-03",
                 "log_bundle_errors": True,
-                "target_directory": "C:/Incoming/2024.01"
+                "target_directory": "C:/Incoming/2024.01/"
             },
             method="POST",
             host=None,
@@ -334,6 +336,38 @@ class TestCheckForNewReleases(unittest.TestCase):
         self.assertFalse(is_directory_item({"type": "file"}))
         self.assertFalse(is_directory_item({"type": {"id": "file"}}))
 
+    def test_get_release_subdir(self):
+        self.assertEqual(get_release_subdir("0-Day - 2024-01-03"), "0-Days")
+        self.assertEqual(get_release_subdir("0-Day Week of 2026.09.07"), "0-Days")
+        self.assertEqual(get_release_subdir("Hitlist - 2024-01-03"), "Hitlists")
+        self.assertEqual(get_release_subdir("Hitlist 2026.07.31"), "Hitlists")
+        self.assertEqual(get_release_subdir("Other Folder"), "")
+
+    def test_join_target_path(self):
+        # Linux remote paths
+        self.assertEqual(
+            join_target_path("/mnt/virt/Comics/0. Released Comics/", "0-Days"),
+            "/mnt/virt/Comics/0. Released Comics/0-Days/"
+        )
+        self.assertEqual(
+            join_target_path("/mnt/virt/Comics/0. Released Comics", "Hitlists"),
+            "/mnt/virt/Comics/0. Released Comics/Hitlists/"
+        )
+        self.assertEqual(
+            join_target_path("/mnt/virt/Comics/0. Released Comics/", ""),
+            "/mnt/virt/Comics/0. Released Comics/"
+        )
+
+        # Windows paths with forward or back slashes
+        self.assertEqual(
+            join_target_path("Y:/0. Released Comics/", "0-Days"),
+            "Y:/0. Released Comics/0-Days/"
+        )
+        self.assertEqual(
+            join_target_path("Y:\\0. Released Comics", "Hitlists"),
+            "Y:\\0. Released Comics\\Hitlists\\"
+        )
+
     def test_is_release_folder(self):
         self.assertTrue(is_release_folder("0-Day - 2024-01-03"))
         self.assertTrue(is_release_folder("Hitlist - 2024-01-03"))
@@ -367,7 +401,7 @@ class TestCheckForNewReleases(unittest.TestCase):
 
     @patch("Scripts.check_for_new_releases.get_queue_bundles")
     def test_check_and_download_releases(self, mock_queue):
-        mock_queue.return_value = [{"name": "0-Day - 2024-01-01", "target": "C:/Incoming/2024.01/0-Day - 2024-01-01"}]
+        mock_queue.return_value = [{"name": "0-Day - 2024-01-01", "target": "/mnt/virt/Comics/0. Released Comics/0-Days/0-Day - 2024-01-01"}]
 
         mock_session = MagicMock()
         mock_session.list_directory.side_effect = lambda path: {
@@ -383,7 +417,8 @@ class TestCheckForNewReleases(unittest.TestCase):
             ]
         }.get(path, [])
 
-        with patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
+        with patch("Scripts.check_for_new_releases.preferences.air_released_comics_directory", "/mnt/virt/Comics/0. Released Comics/"), \
+             patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
              patch("Scripts.check_for_new_releases.preferences.input_directory", str(self.input_dir)), \
              patch("Scripts.check_for_new_releases.preferences.air_share_path", "/New Releases/"):
 
@@ -391,6 +426,43 @@ class TestCheckForNewReleases(unittest.TestCase):
 
             self.assertEqual(queued, ["0-Day - 2024-01-02", "Hitlist - 2024-01-02"])
             self.assertEqual(mock_session.download_directory.call_count, 2)
+            mock_session.download_directory.assert_any_call(
+                remote_path="/New Releases/2024.01/0-Day - 2024-01-02/",
+                target_directory="/mnt/virt/Comics/0. Released Comics/0-Days/",
+                target_name="0-Day - 2024-01-02"
+            )
+            mock_session.download_directory.assert_any_call(
+                remote_path="/New Releases/2024.01/Hitlist - 2024-01-02/",
+                target_directory="/mnt/virt/Comics/0. Released Comics/Hitlists/",
+                target_name="Hitlist - 2024-01-02"
+            )
+
+    @patch("Scripts.check_for_new_releases.get_queue_bundles")
+    def test_check_and_download_releases_custom_released_directory(self, mock_queue):
+        mock_queue.return_value = []
+        mock_session = MagicMock()
+        mock_session.list_directory.side_effect = lambda path: {
+            "/NewScans/": [{"name": "2026.09", "type": {"id": "directory"}, "path": "/NewScans/2026.09/"}],
+            "/NewScans/2026.09/": [
+                {"name": "Hitlist 2026.07.31", "type": {"id": "directory"}, "path": "/NewScans/2026.09/Hitlist 2026.07.31/"}
+            ]
+        }.get(path, [])
+
+        with patch("Scripts.check_for_new_releases.preferences.air_released_comics_directory", None), \
+             patch("Scripts.check_for_new_releases.preferences.input_directory", str(self.input_dir)):
+
+            queued = check_and_download_releases(
+                target_folder="NewScans",
+                released_directory="Z:/Comics/0. Released Comics/",
+                session=mock_session
+            )
+
+            self.assertEqual(queued, ["Hitlist 2026.07.31"])
+            mock_session.download_directory.assert_called_once_with(
+                remote_path="/NewScans/2026.09/Hitlist 2026.07.31/",
+                target_directory="Z:/Comics/0. Released Comics/Hitlists/",
+                target_name="Hitlist 2026.07.31"
+            )
 
     def test_find_month_directories_nested_new_releases(self):
         mock_session = MagicMock()
@@ -443,7 +515,8 @@ class TestCheckForNewReleases(unittest.TestCase):
         }.get(path, [])
         mock_session_cls.return_value.__enter__.return_value = mock_sess
 
-        with patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
+        with patch("Scripts.check_for_new_releases.preferences.air_released_comics_directory", "/mnt/virt/Comics/0. Released Comics/"), \
+             patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
              patch("Scripts.check_for_new_releases.preferences.air_hub", "The Comic Shack"), \
              patch("Scripts.check_for_new_releases.preferences.air_target_user", "KT8Bot2022"), \
              patch("Scripts.check_for_new_releases.preferences.air_target_folder", "NewScans"):
@@ -456,6 +529,11 @@ class TestCheckForNewReleases(unittest.TestCase):
                 hub="The Comic Shack",
                 share_profile=None,
                 verbose=False
+            )
+            mock_sess.download_directory.assert_called_once_with(
+                remote_path="/NewScans/2026.09/0-Day - 2026-09-02/",
+                target_directory="/mnt/virt/Comics/0. Released Comics/0-Days/",
+                target_name="0-Day - 2026-09-02"
             )
 
     @patch("interface_with_airdc.request_to_air")
