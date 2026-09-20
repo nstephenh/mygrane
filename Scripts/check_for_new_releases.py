@@ -81,28 +81,8 @@ def is_already_downloaded_or_queued(release_name: str,
     if release_name in queued:
         return True
 
-    subdir = get_release_subdir(release_name)
-
-    # Check input directory destinations (e.g. "0. Released Comics/0-Days/..." or "0. Released Comics/Hitlists/...")
-    if input_directory and input_directory.exists():
-        if subdir and (input_directory / subdir / release_name).exists():
-            return True
-        if (input_directory / "0-Days" / release_name).exists():
-            return True
-        if (input_directory / "Hitlists" / release_name).exists():
-            return True
-        if (input_directory / release_name).exists():
-            return True
-
-    # Check incoming directory (month folder, subdir, or root)
-    if incoming_directory and incoming_directory.exists():
-        if month_folder_name and (incoming_directory / month_folder_name / release_name).exists():
-            return True
-        if subdir and (incoming_directory / subdir / release_name).exists():
-            return True
-        if (incoming_directory / release_name).exists():
-            return True
-
+    # Note: Even if the destination folder exists locally, we still queue the download
+    # so AirDC++ can fetch any new files added to the release.
     return False
 
 

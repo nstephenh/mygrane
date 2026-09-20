@@ -378,26 +378,56 @@ class TestCheckForNewReleases(unittest.TestCase):
         # 1. In queue
         self.assertTrue(is_already_downloaded_or_queued("0-Day - 2024-01-01", "2024.01", self.incoming_dir, self.input_dir, {"0-Day - 2024-01-01"}))
 
-        # 2. In incoming
+        # 2. In incoming (existing destination folder should still return False so new files can be queued)
         month_dir = self.incoming_dir / "2024.01"
         month_dir.mkdir()
         (month_dir / "0-Day - 2024-01-02").mkdir()
-        self.assertTrue(is_already_downloaded_or_queued("0-Day - 2024-01-02", "2024.01", self.incoming_dir, self.input_dir, set()))
+        self.assertFalse(is_already_downloaded_or_queued("0-Day - 2024-01-02", "2024.01", self.incoming_dir, self.input_dir, set()))
 
-        # 3. In input 0-Days
+        # 3. In input 0-Days (existing destination folder should still return False so new files can be queued)
         zero_days_dir = self.input_dir / "0-Days"
         zero_days_dir.mkdir()
         (zero_days_dir / "0-Day - 2024-01-03").mkdir()
-        self.assertTrue(is_already_downloaded_or_queued("0-Day - 2024-01-03", "2024.01", self.incoming_dir, self.input_dir, set()))
+        self.assertFalse(is_already_downloaded_or_queued("0-Day - 2024-01-03", "2024.01", self.incoming_dir, self.input_dir, set()))
 
-        # 4. In input Hitlists
+        # 4. In input Hitlists (existing destination folder should still return False so new files can be queued)
         hitlists_dir = self.input_dir / "Hitlists"
         hitlists_dir.mkdir()
         (hitlists_dir / "Hitlist - 2024-01-04").mkdir()
-        self.assertTrue(is_already_downloaded_or_queued("Hitlist - 2024-01-04", "2024.01", self.incoming_dir, self.input_dir, set()))
+        self.assertFalse(is_already_downloaded_or_queued("Hitlist - 2024-01-04", "2024.01", self.incoming_dir, self.input_dir, set()))
 
         # 5. Not downloaded anywhere
         self.assertFalse(is_already_downloaded_or_queued("0-Day - 2024-01-05", "2024.01", self.incoming_dir, self.input_dir, set()))
+
+    @patch("Scripts.check_for_new_releases.get_queue_bundles")
+    def test_check_and_download_releases_destination_folder_exists(self, mock_queue):
+        mock_queue.return_value = []
+        mock_session = MagicMock()
+        mock_session.list_directory.side_effect = lambda path: {
+            "/New Releases/": [
+                {"name": "2024.01", "type": {"id": "directory"}, "path": "/New Releases/2024.01/"}
+            ],
+            "/New Releases/2024.01/": [
+                {"name": "0-Day - 2024-01-02", "type": {"id": "directory"}, "path": "/New Releases/2024.01/0-Day - 2024-01-02/"}
+            ]
+        }.get(path, [])
+
+        # Create destination folder locally
+        (self.input_dir / "0-Days" / "0-Day - 2024-01-02").mkdir(parents=True)
+
+        with patch("Scripts.check_for_new_releases.preferences.air_released_comics_directory", "/mnt/virt/Comics/0. Released Comics/"), \
+             patch("Scripts.check_for_new_releases.preferences.incoming_directory", str(self.incoming_dir)), \
+             patch("Scripts.check_for_new_releases.preferences.input_directory", str(self.input_dir)), \
+             patch("Scripts.check_for_new_releases.preferences.air_share_path", "/New Releases/"):
+
+            queued = check_and_download_releases(share_path="/New Releases/", session=mock_session)
+
+            self.assertEqual(queued, ["0-Day - 2024-01-02"])
+            mock_session.download_directory.assert_called_once_with(
+                remote_path="/New Releases/2024.01/0-Day - 2024-01-02/",
+                target_directory="/mnt/virt/Comics/0. Released Comics/0-Days/",
+                target_name="0-Day - 2024-01-02"
+            )
 
     @patch("Scripts.check_for_new_releases.get_queue_bundles")
     def test_check_and_download_releases(self, mock_queue):
